@@ -6,19 +6,29 @@
 
 #define MASK_COND 		0xF0000000
 #define MASK_OPCODE 	0x0C000000
-#define MASK_FUNCODE 	0x03C00000
-#define MASK_REGDEST	0x003C0000
-#define MASK_REGSRC1	0x0003C000
-#define MASK_REGSRC2	0x00003C00
-#define MASK_IMMD		0x00003FFF
+#define MASK_FUNCODE 	0x03F00000
+#define MASK_REGDEST	0x000F0000
+#define MASK_REGSRC1	0x0000F000
+#define MASK_REGSRC2	0x00000F00
+#define MASK_IMMD		0x00000FFF
+
+
+
+#define SHIFT_COND 		28
+#define SHIFT_OPCODE	26
+#define SHIFT_FUNCODE 	20
+#define SHIFT_REGDEST 	16
+#define SHIFT_REGSRC1	12
+#define SHIFT_REGSRC2	8
+	
 
 
 
 typedef struct RegFile RegFile;
-typedef struct CPU CPU
+typedef struct CPU CPU;
 typedef struct Decoder Decoder;
 
-uint8_t mem[CPU];
+uint8_t mem[MEM_SIZE];
 
 struct Decoder
 {
@@ -67,20 +77,20 @@ void cpu_loop()
 
 void fetch()
 {
-	cpu.pc = cpu.regFile[15];
-	cpu.regFile[15] += 4;
-	cpu.ir = mem[pc]; 
+	cpu.pc = cpu.rfile.r[15];
+	cpu.rfile.r[15] += 4;
+	cpu.ir = mem[cpu.pc]; 
 }
 
 void decode()
 {
-	cpu.decoder.cond = (cpu.ir & MASK_COND) >> 28;
-	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> 26;
-	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> 22;
+	cpu.decoder.cond = (cpu.ir & MASK_COND) >> SHIFT_COND;
+	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
+	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> SHIFT_FUNCODE;
 
-	cpu.rfile.dst_index = (cpu.ir & MASK_REGDEST) >> 18;
-	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> 14;
-	cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> 10;
+	cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
+	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
+	cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> SHIFT_REGSRC2;
 	cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
 
 }
@@ -90,27 +100,33 @@ void execute()
 {
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
 	cpu.alu.src2 = cpu.rfile.r[cpu.rfile.src2_index];
-	if(cpu.alu >= 8) cpu.alu.src2 = cpu.rfile.immd;
+	if(cpu.decoder.func >= 8) cpu.alu.src2 = cpu.rfile.immediate;
 
 	cpu.alu.opcode = cpu.decoder.func & 0x8;  
 
 	if(cpu.decoder.opcode == 0)
 	{
-		cpu.alu.res = cpu.alu.op[cpu.alu.code](cpu.alu.src1, cpu.alu.src2);
+		cpu.alu.res = cpu.alu.op[cpu.alu.opcode](cpu.alu.src1, cpu.alu.src2);
 		return;
 	}
 	if(cpu.decoder.opcode == 1)
 	{
-
+		
 		return;
 	}
 
 	if(cpu.decoder.opcode == 3)
 	{
 
-		return
+		return;
 	}
 	
+}
+
+
+void memory()
+{
+
 }
 
 void writeback()
