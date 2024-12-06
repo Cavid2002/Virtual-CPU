@@ -59,8 +59,8 @@ void cpu_loop()
 	{
 		fetch();
 		decode();
-		read();
-		execute();
+		execute(); 
+		memory();
 		writeback();
 	}
 }
@@ -78,28 +78,38 @@ void decode()
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> 26;
 	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> 22;
 
-}
-
-
-void read(uint32_t instruction)
-{
 	cpu.rfile.dst_index = (cpu.ir & MASK_REGDEST) >> 18;
 	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> 14;
 	cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> 10;
 	cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
-	cpu.rfile.r[cpu.rfile.src1_index];
 
-	
 }
+
 
 void execute()
 {
+	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
+	cpu.alu.src2 = cpu.rfile.r[cpu.rfile.src2_index];
+	if(cpu.alu >= 8) cpu.alu.src2 = cpu.rfile.immd;
+
+	cpu.alu.opcode = cpu.decoder.func & 0x8;  
+
 	if(cpu.decoder.opcode == 0)
+	{
+		cpu.alu.res = cpu.alu.op[cpu.alu.code](cpu.alu.src1, cpu.alu.src2);
+		return;
+	}
+	if(cpu.decoder.opcode == 1)
 	{
 
 		return;
 	}
 
+	if(cpu.decoder.opcode == 3)
+	{
+
+		return
+	}
 	
 }
 
