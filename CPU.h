@@ -1,58 +1,14 @@
-
 #include <stdint.h>
 #include "ALU.h"
+#include "Decoder.h"
 
-#define MEM_SIZE 1024 * 1024
+#define MEM_SIZE 16 * 1024
 
-#define MASK_COND 		0xF0000000
-#define MASK_OPCODE 	0x0C000000
-#define MASK_FUNCODE 	0x03F00000
-#define MASK_REGDEST	0x000F0000
-#define MASK_REGSRC1	0x0000F000
-#define MASK_REGSRC2	0x00000F00
-#define MASK_IMMD		0x00000FFF
+uint32_t mem[MEM_SIZE];
 
 
-
-#define SHIFT_COND 		28
-#define SHIFT_OPCODE	26
-#define SHIFT_FUNCODE 	20
-#define SHIFT_REGDEST 	16
-#define SHIFT_REGSRC1	12
-#define SHIFT_REGSRC2	8
-
-
-#define OP_DATA 0
-#define OP_STR	1
-#define OP_LDR 	2
-#define OP_JMP	3
-	
-#define FUNC_IMMD_MASK 32
-#define FUNC_FLAG_MASK 16
-#define FUNC_ALUC_MASK 15
-
-
-typedef struct RegFile RegFile;
 typedef struct CPU CPU;
-typedef struct Decoder Decoder;
 
-uint8_t mem[MEM_SIZE];
-
-struct Decoder
-{
-	uint8_t cond;
-	uint8_t opcode;
-	uint8_t func;
-};
-
-struct RegFile
-{
-	uint8_t dest_index;
-	uint8_t src1_index;
-	uint8_t src2_index;
-	uint32_t immediate;
-	uint32_t r[16];
-};
 
 struct CPU
 {
@@ -68,22 +24,6 @@ struct CPU
 
 CPU cpu;
 
-void cpu_init()
-{
-
-}
-
-void cpu_loop()
-{
-	while(1)
-	{
-		fetch();
-		decode();
-		execute(); 
-		memory();
-		writeback();
-	}
-}
 
 void fetch()
 {
@@ -97,17 +37,19 @@ void decode()
 	cpu.decoder.cond = (cpu.ir & MASK_COND) >> SHIFT_COND;
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
 	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> SHIFT_FUNCODE;
+	cpu.decoder.flag_res = cpu.decoder.cond & cpu.alu.flags;
 
 	cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
 	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
 	cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> SHIFT_REGSRC2;
 	cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
-
 }
 
 
 void execute()
 {
+	if(cpu.decoder.flag_res == 0) return;
+
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
 	
 	if(cpu.decoder.func & 32)
@@ -122,15 +64,25 @@ void execute()
 
 	cpu.alu.opcode = cpu.decoder.func & FUNC_ALUC_MASK;
 	cpu.alu.res = cpu.alu.op[cpu.alu.opcode](cpu.alu.src1, cpu.alu.src2);
-	
-	
-	
+
+	if(cpu.decoder.func & (uint8_t)FUNC_FLAG_MASK)
+	{
+		cpu.alu.flags = 0;
+		cpu.alu.flags |= (uint8_t)((cpu.alu.res & 0x80000000) >> 31); // N
+		cpu.alu.flags |= (uint8_t)(~(cpu.alu.res & cpu.alu.res) >> 30); // Z
+		cpu.alu.flags |= (uint8_t)((((cpu.alu.src1 >> 31) | 
+									(cpu.alu.src2 >> 31)) & ~(cpu.alu.res >> 31)) << 2); // C
+		cpu.alu.flags |= (uint8_t)(~((cpu.alu.src1 >> 31) ^ 
+						(cpu.alu.src2 >> 31)) & (cpu.alu.res >> 31) << 3); // V
+	}
 	
 }
 
 
 void memory()
 {
+	if(cpu.decoder.flag_res == 0) return;
+
 	if(cpu.decoder.opcode == OP_LDR)
 	{
 		cpu.mar = cpu.alu.res;
@@ -141,12 +93,15 @@ void memory()
 	if(cpu.decoder.opcode == OP_STR)
 	{
 		cpu.mar = cpu.alu.res;
-
+		cpu.mbr = cpu.rfile.r[cpu.rfile.dest_index];
+		mem[cpu.mar] = cpu.mbr;
 	}
 }
 
 void writeback()
 {
+	if(cpu.decoder.flag_res == 0) return;
+	
 	if(cpu.decoder.opcode == OP_DATA)
 	{
 		cpu.rfile.r[cpu.rfile.dest_index] = cpu.alu.res;
@@ -160,5 +115,30 @@ void writeback()
 	}
 	
 }
+
+
+void cpu_init()
+{
+	cpu.alu = alu_init();
+	cpu.decoder = decoder_init();
+	cpu.rfile = registers_init();
+	cpu.pc = 0;
+	cpu.mar = 0;
+	cpu.ir = 0;
+	cpu.mbr = 0; 
+}
+
+void cpu_loop()
+{
+	while(1)
+	{
+		fetch();
+		decode();
+		execute(); 
+		memory();
+		writeback();
+	}
+}
+
 
 
