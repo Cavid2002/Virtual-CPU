@@ -20,8 +20,16 @@
 #define SHIFT_REGDEST 	16
 #define SHIFT_REGSRC1	12
 #define SHIFT_REGSRC2	8
-	
 
+
+#define OP_DATA 0
+#define OP_STR	1
+#define OP_LDR 	2
+#define OP_JMP	3
+	
+#define FUNC_IMMD_MASK 32
+#define FUNC_FLAG_MASK 16
+#define FUNC_ALUC_MASK 15
 
 
 typedef struct RegFile RegFile;
@@ -50,6 +58,8 @@ struct CPU
 {
 	uint32_t pc;
 	uint32_t ir;
+	uint32_t mar;
+	uint32_t mbr;
 	Decoder decoder;
 	RegFile rfile;
 	ALU alu;
@@ -99,32 +109,56 @@ void decode()
 void execute()
 {
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
-	cpu.alu.src2 = cpu.rfile.r[cpu.rfile.src2_index];
-	if(cpu.decoder.func >= 8) cpu.alu.src2 = cpu.rfile.immediate;
 	
-	cpu.alu.res = cpu.alu.op[cpu.alu.opcode & 48](cpu.alu.src1, cpu.alu.src2);
-	
+	if(cpu.decoder.func & 32)
+	{
+		cpu.alu.src2 = cpu.rfile.immediate;
+	}
+	else
+	{
+		cpu.alu.src2 = cpu.rfile.r[cpu.rfile.src2_index];
+	}
 
+
+	cpu.alu.opcode = cpu.decoder.func & FUNC_ALUC_MASK;
+	cpu.alu.res = cpu.alu.op[cpu.alu.opcode](cpu.alu.src1, cpu.alu.src2);
 	
-	cpu.alu.flags |= ~(cpu.alu.res | 0x0);
-	cpu.alu.flags |= (cpu.alu.res >> 31) << 1;
-	cpu.alu.flags |= ((cpu.alu.src1 >> 31) & (cpu.alu.src2 >> 31)) << 2;
-	cpu.alu.flags |= 
+	
+	
 	
 }
 
 
 void memory()
 {
-	if(cpu.decoder.opcode == 2)
+	if(cpu.decoder.opcode == OP_LDR)
 	{
-		
+		cpu.mar = cpu.alu.res;
+		cpu.mbr = mem[cpu.mar];
+		return;
+	}
+
+	if(cpu.decoder.opcode == OP_STR)
+	{
+		cpu.mar = cpu.alu.res;
+
 	}
 }
 
 void writeback()
 {
+	if(cpu.decoder.opcode == OP_DATA)
+	{
+		cpu.rfile.r[cpu.rfile.dest_index] = cpu.alu.res;
+		return;
+	}
 
+	if(cpu.decoder.opcode == OP_LDR)
+	{
+		cpu.rfile.r[cpu.rfile.dest_index] = cpu.mbr;
+		return;
+	}
+	
 }
 
 
