@@ -101,32 +101,25 @@ void execute()
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
 	cpu.alu.src2 = cpu.rfile.r[cpu.rfile.src2_index];
 	if(cpu.decoder.func >= 8) cpu.alu.src2 = cpu.rfile.immediate;
+	
+	cpu.alu.res = cpu.alu.op[cpu.alu.opcode & 48](cpu.alu.src1, cpu.alu.src2);
+	
 
-	cpu.alu.opcode = cpu.decoder.func & 0x8;  
-
-	if(cpu.decoder.opcode == 0)
-	{
-		cpu.alu.res = cpu.alu.op[cpu.alu.opcode](cpu.alu.src1, cpu.alu.src2);
-		return;
-	}
-	if(cpu.decoder.opcode == 1)
-	{
-		
-		return;
-	}
-
-	if(cpu.decoder.opcode == 3)
-	{
-
-		return;
-	}
+	
+	cpu.alu.flags |= ~(cpu.alu.res | 0x0);
+	cpu.alu.flags |= (cpu.alu.res >> 31) << 1;
+	cpu.alu.flags |= ((cpu.alu.src1 >> 31) & (cpu.alu.src2 >> 31)) << 2;
+	cpu.alu.flags |= 
 	
 }
 
 
 void memory()
 {
-
+	if(cpu.decoder.opcode == 2)
+	{
+		
+	}
 }
 
 void writeback()
