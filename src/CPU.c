@@ -1,28 +1,19 @@
-#include <stdint.h>
-#include "ALU.h"
-#include "Decoder.h"
-
-#define MEM_SIZE 16 * 1024
+#include <stdio.h>
+#include "../include/CPU.h"
 
 uint32_t mem[MEM_SIZE];
 
-
-typedef struct CPU CPU;
-
-
-struct CPU
-{
-	uint32_t pc;
-	uint32_t ir;
-	uint32_t mar;
-	uint32_t mbr;
-	Decoder decoder;
-	RegFile rfile;
-	ALU alu;
-};
-
-
 CPU cpu;
+
+void display_regs()
+{
+	for(int i = 0; i < 16; i++)
+	{
+		fprintf(stdout, "r%d = %d\n", i, cpu.rfile.r[i]);
+	}
+	fprintf(stdout, "psw = %d\n", cpu.alu.flags);
+}
+
 
 
 void fetch()
@@ -34,17 +25,34 @@ void fetch()
 
 void decode()
 {
+	if(cpu.ir == 0xFFFFFFFF)
+	{
+		display_regs();
+		cpu.decoder.flag_res = 0;
+	}
+
+
 	cpu.decoder.cond = (cpu.ir & MASK_COND) >> SHIFT_COND;
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
 	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> SHIFT_FUNCODE;
 
 	if(cpu.decoder.cond == 3) cpu.decoder.flag_res = 1;
-	else cpu.decoder.flag_res = cpu.decoder.cond & cpu.alu.flags;
+	else cpu.decoder.flag_res = cpu.decoder.func & cpu.alu.flags;
 
-	cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
-	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
-	cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> SHIFT_REGSRC2;
-	cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
+	if(cpu.decoder.opcode == OP_BRC)
+	{
+		cpu.rfile.src1_index = 15;
+		cpu.rfile.immediate = cpu.ir & MASK_BRCH_IMMD;
+		cpu.rfile.dest_index = 15;
+	}		
+	else
+	{
+		cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
+		cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
+		cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> SHIFT_REGSRC2;
+		cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
+	}
+	
 }
 
 
@@ -52,9 +60,19 @@ void execute()
 {
 	if(cpu.decoder.flag_res == 0) return;
 
+
+	if(cpu.decoder.opcode == OP_BRC)
+	{
+		cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
+		cpu.alu.src2 = cpu.rfile.immediate;
+		cpu.alu.res = cpu.alu.op[0](cpu.alu.src1, cpu.alu.src2);
+		return;
+	}
+
+	/// If it is not brach instruction
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
-	
-	if(cpu.decoder.func & 32)
+
+	if(cpu.decoder.func & (uint8_t)FUNC_IMMD_MASK)
 	{
 		cpu.alu.src2 = cpu.rfile.immediate;
 	}
@@ -97,6 +115,7 @@ void memory()
 		cpu.mar = cpu.alu.res;
 		cpu.mbr = cpu.rfile.r[cpu.rfile.dest_index];
 		mem[cpu.mar] = cpu.mbr;
+		return;
 	}
 }
 
@@ -104,7 +123,7 @@ void writeback()
 {
 	if(cpu.decoder.flag_res == 0) return;
 	
-	if(cpu.decoder.opcode == OP_DATA)
+	if(cpu.decoder.opcode == OP_DATA || cpu.decoder.opcode == OP_BRC)
 	{
 		cpu.rfile.r[cpu.rfile.dest_index] = cpu.alu.res;
 		return;
@@ -117,6 +136,8 @@ void writeback()
 	}
 	
 }
+
+
 
 
 void cpu_init()
@@ -141,6 +162,3 @@ void cpu_loop()
 		writeback();
 	}
 }
-
-
-

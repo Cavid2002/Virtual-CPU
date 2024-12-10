@@ -8,6 +8,7 @@
 #define MASK_REGSRC1	0x0000F000
 #define MASK_REGSRC2	0x00000F00
 #define MASK_IMMD		0x00000FFF
+#define MASK_BRCH_IMMD  0x0FFFFFFF
 
 
 #define SHIFT_COND 		28
@@ -20,14 +21,14 @@
 
 #define FUNC_IMMD_MASK 32
 #define FUNC_FLAG_MASK 16
-#define FUNC_ALUC_MASK 15
+#define FUNC_ALUC_MASK 7
 
 
 
 #define OP_DATA 0
 #define OP_STR	1
 #define OP_LDR 	2
-#define OP_JMP	3
+#define OP_BRC	3
 
 
 typedef struct Decoder Decoder;
@@ -55,29 +56,5 @@ struct RegFile
 };
 
 
-Decoder decoder_init()
-{
-    Decoder decoder;
-    decoder.cond = 0;
-    decoder.flag_res = 0;
-    decoder.func = 0;
-    decoder.opcode = 0;
-    return decoder;
-}
-
-RegFile registers_init()
-{
-    RegFile rfile;
-    rfile.dest_index = 0;
-    rfile.src1_index = 0;
-    rfile.src2_index = 0;
-    rfile.immediate = 0;
-    
-    for(int i = 0; i < 16; i++)
-    {
-        rfile.r[i] = 0;
-    }
-
-    return rfile;
-
-}
+Decoder decoder_init();
+RegFile registers_init();

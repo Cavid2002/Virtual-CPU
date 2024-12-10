@@ -1,19 +1,4 @@
-#include <stdint.h>
-
-typedef struct ALU ALU;
-
-
-struct ALU
-{
-	uint32_t src1;
-	uint32_t src2;
-	uint32_t res;
-	uint8_t opcode;
-	uint8_t flags;
-	uint32_t (*op[8])(uint32_t, uint32_t);
-
-};
-
+#include "../include/ALU.h"
 
 ALU alu_init()
 {
@@ -68,5 +53,4 @@ uint32_t lshitf(uint32_t src1, uint32_t src2)
 {
 	return src1 << src2;
 }
-
 
