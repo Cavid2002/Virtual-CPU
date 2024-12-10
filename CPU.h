@@ -37,7 +37,9 @@ void decode()
 	cpu.decoder.cond = (cpu.ir & MASK_COND) >> SHIFT_COND;
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
 	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> SHIFT_FUNCODE;
-	cpu.decoder.flag_res = cpu.decoder.cond & cpu.alu.flags;
+
+	if(cpu.decoder.cond == 3) cpu.decoder.flag_res = 1;
+	else cpu.decoder.flag_res = cpu.decoder.cond & cpu.alu.flags;
 
 	cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
 	cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
