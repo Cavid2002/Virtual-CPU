@@ -59,9 +59,30 @@ void free_tokens(char** tokens)
 }
 
 
+void parse_flag(char** tokens, int* instr)
+{
+    int temp = *instr;
+    int offset = 0;
+    int isize = strlen(tokens[0]);
+    if(isize == 5)
+    {
+        offset = 3;
+    }
+    else if(isize == 6)
+    {
+        offset = 4;
+    }
+
+    if(strncmp(tokens[0] + offset, "lt", 2) == 0)
+    {
+        temp |= 
+    }
+
+}
 
 
-void parse_instruction(char* line, uint32_t* instr)
+
+void parse_instruction(char* line, uint32_t* instr, int count)
 {
     char** tokens = split_str(line, ' ');
 
@@ -81,6 +102,7 @@ void parse_instruction(char* line, uint32_t* instr)
         return;
     }
     
+
     parse_dataproc(tokens, instr);
 
 
@@ -91,10 +113,11 @@ void parse_instruction(char* line, uint32_t* instr)
 
 void generate_binary(FILE* input, FILE* output)
 {
-    
+    int c = 0;
     while(fgets(line, MAX_LINE, input))
     {
-        parse_instruction(line, instr);
+        parse_instruction(line, instr, count);
+        c++;
     }
 }
 

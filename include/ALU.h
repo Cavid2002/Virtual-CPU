@@ -23,4 +23,5 @@ struct ALU
 };
 
 ALU alu_init();
+uint8_t set_flag_register(uint32_t src1, uint32_t src2, uint32_t res);
 

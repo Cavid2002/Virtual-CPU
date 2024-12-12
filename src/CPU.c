@@ -87,13 +87,7 @@ void execute()
 
 	if(cpu.decoder.func & (uint8_t)FUNC_FLAG_MASK)
 	{
-		cpu.alu.flags = 0;
-		cpu.alu.flags |= (uint8_t)((cpu.alu.res & 0x80000000) >> 31); // N
-		cpu.alu.flags |= (uint8_t)(~(cpu.alu.res & cpu.alu.res) >> 30); // Z
-		cpu.alu.flags |= (uint8_t)((((cpu.alu.src1 >> 31) | 
-									(cpu.alu.src2 >> 31)) & ~(cpu.alu.res >> 31)) << 2); // C
-		cpu.alu.flags |= (uint8_t)(~((cpu.alu.src1 >> 31) ^ 
-						(cpu.alu.src2 >> 31)) & (cpu.alu.res >> 31) << 3); // V
+		cpu.alu.flags = set_flag_register(cpu.alu.src1, cpu.alu.src2, cpu.alu.res);
 	}
 	
 }
