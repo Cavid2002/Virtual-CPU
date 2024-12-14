@@ -3,11 +3,48 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "../include/Decoder.h"
+
 #define MAX_LINE 100
+
+uint32_t instr_count = 0;
+
+typedef enum COND_FIELD{
+    EQ,
+    NOT_EQ,
+    CARRY_SET,
+    CARRY_CLEAR,
+    MINUS,
+    PLUS,
+    OVERFLOW_SET,
+    OVERFLOW_CLEAR,
+    HIGHER,
+    LESS_SAME,
+    GREATER_EQ,
+    LESS_THAN,
+    GREATER_THAN,
+    LESS_EQ,
+    ALWAYS,
+    NEVER,
+};
+
+char* opcode[4] = {"", "ldr", "str", "brc"};
+char* aluop[8] = {"add", "sub", "orr", "and", "xor", "lsh", "rsh"};
+char* cond_prefix[16] = {"eq", "ne", "cs", "cc", 
+                        "mi", "pl", "vs", "vc", 
+                        "hi", "ls", "ge", "lt",
+                        "gt", "le", "al", NULL};
 
 char dest_filename[MAX_LINE];
 char line[MAX_LINE];
 uint32_t instr;
+
+void fatal_error(const char* msg)
+{
+    fprintf(stderr, "[ERROR]%s\n", msg);
+    exit(EXIT_FAILURE);
+}
+
 
 char** split_str(char* str, char c)
 {
@@ -63,8 +100,16 @@ void parse_flag(char** tokens, int* instr)
 {
     int temp = *instr;
     int offset = 0;
+    int cond = 0;
     int isize = strlen(tokens[0]);
-    if(isize == 5)
+    if(isize == 3) 
+    {
+        cond = 14;
+        temp = cond << SHIFT_COND;
+        *instr |= temp;
+        return;
+    }
+    else if(isize == 5)
     {
         offset = 3;
     }
@@ -73,16 +118,25 @@ void parse_flag(char** tokens, int* instr)
         offset = 4;
     }
 
-    if(strncmp(tokens[0] + offset, "lt", 2) == 0)
+    for(int i = 0; i < 14; i++)
     {
-        temp |= 
+        if(strncmp(tokens[0] + offset, cond_prefix[i], 2) == 0)
+        {
+            cond = i;
+            temp = cond << SHIFT_COND;
+            *instr |= temp;
+            return;
+        }
     }
+    
+
+    fatal_error("syntrax error");
 
 }
 
 
 
-void parse_instruction(char* line, uint32_t* instr, int count)
+void parse_instruction(char* line, uint32_t* instr)
 {
     char** tokens = split_str(line, ' ');
 
@@ -113,11 +167,11 @@ void parse_instruction(char* line, uint32_t* instr, int count)
 
 void generate_binary(FILE* input, FILE* output)
 {
-    int c = 0;
     while(fgets(line, MAX_LINE, input))
     {
-        parse_instruction(line, instr, count);
-        c++;
+        line[strlen(line) - 1] = '\0';
+        parse_instruction(line, instr, instr_count);
+        instr_count++;
     }
 }
 

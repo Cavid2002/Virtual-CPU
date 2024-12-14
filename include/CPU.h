@@ -25,4 +25,5 @@ extern CPU cpu;
 
 void cpu_init();
 void cpu_loop();
+void display_regs();
 

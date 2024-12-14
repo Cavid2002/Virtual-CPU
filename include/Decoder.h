@@ -42,6 +42,7 @@ struct Decoder
 	uint8_t cond;
 	uint8_t opcode;
 	uint8_t func;
+	uint8_t (*op[16])(uint8_t);
 	uint8_t flag_res;
 };
 
@@ -58,3 +59,19 @@ struct RegFile
 
 Decoder decoder_init();
 RegFile registers_init();
+
+uint8_t equal(uint8_t flag);
+uint8_t not_equal(uint8_t flag);
+uint8_t carry_set(uint8_t flag);
+uint8_t carry_clear(uint8_t flag);
+uint8_t minus(uint8_t flag);
+uint8_t plus(uint8_t flag);
+uint8_t overflow_set(uint8_t flag);
+uint8_t overflow_clear(uint8_t flag);
+uint8_t higher(uint8_t flag);
+uint8_t lower_same(uint8_t flag);
+uint8_t greater_equal(uint8_t flag);
+uint8_t less(uint8_t flag);
+uint8_t greater(uint8_t flag);
+uint8_t less_equal(uint8_t flag);
+uint8_t always(uint8_t flag);

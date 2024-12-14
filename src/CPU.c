@@ -5,17 +5,6 @@ uint32_t mem[MEM_SIZE];
 
 CPU cpu;
 
-void display_regs()
-{
-	for(int i = 0; i < 16; i++)
-	{
-		fprintf(stdout, "r%d = %d\n", i, cpu.rfile.r[i]);
-	}
-	fprintf(stdout, "psw = %d\n", cpu.alu.flags);
-}
-
-
-
 void fetch()
 {
 	cpu.pc = cpu.rfile.r[15];
@@ -36,8 +25,7 @@ void decode()
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
 	cpu.decoder.func = (cpu.ir & MASK_FUNCODE) >> SHIFT_FUNCODE;
 
-	if(cpu.decoder.cond == 3) cpu.decoder.flag_res = 1;
-	else cpu.decoder.flag_res = cpu.decoder.func & cpu.alu.flags;
+	cpu.decoder.flag_res = cpu.decoder.op[cpu.decoder.cond](cpu.alu.flags);
 
 	if(cpu.decoder.opcode == OP_BRC)
 	{
@@ -133,13 +121,12 @@ void writeback()
 
 
 
-
 void cpu_init()
 {
 	cpu.alu = alu_init();
 	cpu.decoder = decoder_init();
 	cpu.rfile = registers_init();
-	cpu.pc = 0;
+	cpu.pc = 4096;
 	cpu.mar = 0;
 	cpu.ir = 0;
 	cpu.mbr = 0; 
@@ -155,4 +142,14 @@ void cpu_loop()
 		memory();
 		writeback();
 	}
+}
+
+
+void display_regs()
+{
+	for(int i = 0; i < 16; i++)
+	{
+		fprintf(stdout, "r%d = %d\n", i, cpu.rfile.r[i]);
+	}
+	fprintf(stdout, "psw = %d\n", cpu.alu.flags);
 }
