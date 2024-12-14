@@ -8,11 +8,13 @@
 #define MASK_REGSRC1	0x0000F000
 #define MASK_REGSRC2	0x00000F00
 #define MASK_IMMD		0x00000FFF
-#define MASK_BRCH_IMMD  0x0FFFFFFF
+#define MASK_BRCH_IMMD  0x03FFFFFF
 
 
 #define SHIFT_COND 		28
 #define SHIFT_OPCODE	26
+#define SHIFT_IMMD		25
+#define SHIFT_FLAGS		24
 #define SHIFT_FUNCODE 	20
 #define SHIFT_REGDEST 	16
 #define SHIFT_REGSRC1	12
@@ -75,3 +77,5 @@ uint8_t less(uint8_t flag);
 uint8_t greater(uint8_t flag);
 uint8_t less_equal(uint8_t flag);
 uint8_t always(uint8_t flag);
+
+uint32_t convert_28_to_32(uint32_t instr);

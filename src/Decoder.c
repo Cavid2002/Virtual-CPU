@@ -24,7 +24,6 @@ Decoder decoder_init()
     decoder.op[12] = greater;
     decoder.op[13] = less_equal;
     decoder.op[14] = always;
-    decoder.op[15] = NULL;
     return decoder;
 }
 
@@ -45,6 +44,15 @@ RegFile registers_init()
 
 }
 
+uint32_t convert_26_to_32(uint32_t instr)
+{
+    uint32_t offset = instr & MASK_BRCH_IMMD;
+    if(offset & (1 << 25))
+    {
+        offset |= ~MASK_BRCH_IMMD;
+    }
+    return offset;
+}
 
 uint8_t equal(uint8_t flag)
 {

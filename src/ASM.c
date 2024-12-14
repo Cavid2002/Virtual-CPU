@@ -28,6 +28,10 @@ typedef enum COND_FIELD{
     NEVER,
 };
 
+char* regs[16] = {"r0", "r1", "r2", "r3",
+                  "r4", "r5", "r6", "r7",
+                   "r8", "r9", "r10", "r11",
+                   "r12", "13", "r14", "r15"};
 char* opcode[4] = {"", "ldr", "str", "brc"};
 char* aluop[8] = {"add", "sub", "orr", "and", "xor", "lsh", "rsh"};
 char* cond_prefix[16] = {"eq", "ne", "cs", "cc", 
@@ -41,7 +45,7 @@ uint32_t instr;
 
 void fatal_error(const char* msg)
 {
-    fprintf(stderr, "[ERROR]%s\n", msg);
+    fprintf(stderr, "[ERROR]%s ===> %d\n", msg, instr_count);
     exit(EXIT_FAILURE);
 }
 
@@ -98,32 +102,47 @@ void free_tokens(char** tokens)
 
 void parse_flag(char** tokens, int* instr)
 {
-    int temp = *instr;
+    int temp = 0;
     int offset = 0;
     int cond = 0;
     int isize = strlen(tokens[0]);
-    if(isize == 3) 
+
+    switch (isize)
     {
+    case 3:
         cond = 14;
-        temp = cond << SHIFT_COND;
+        temp |= cond << SHIFT_COND;
         *instr |= temp;
         return;
-    }
-    else if(isize == 5)
-    {
+        break;
+    case 4:
+        cond = 14;
+        temp |= cond << SHIFT_COND;
+
+        if(tokens[0][3] == 's') temp |= 1 << SHIFT_FLAGS;
+        else fatal_error("syntax error");
+        *instr |= temp;
+        
+        return;
+        break;
+    case 5:
         offset = 3;
-    }
-    else if(isize == 6)
-    {
+        break;
+    case 6:
         offset = 4;
+        if(tokens[0][3] == 's') temp |= 1 << SHIFT_FLAGS;
+        else fatal_error("syntax error");
+        
+        break;
     }
+    
 
     for(int i = 0; i < 14; i++)
     {
         if(strncmp(tokens[0] + offset, cond_prefix[i], 2) == 0)
         {
             cond = i;
-            temp = cond << SHIFT_COND;
+            temp |= cond << SHIFT_COND;
             *instr |= temp;
             return;
         }
@@ -135,11 +154,195 @@ void parse_flag(char** tokens, int* instr)
 }
 
 
+void parse_load(char** tokens, uint32_t* instr)
+{
+    uint32_t temp;
+    
+    temp = 0;
+    temp |= 2 << SHIFT_OPCODE;
+    
+    for(int i = 0; i < 16; i++)
+    {
+        if(strcmp(tokens[1], regs[i]) == 0)
+        {   
+            temp |= i << SHIFT_REGDEST;
+            break;
+        }
+    }
+
+    for(int i = 0; i < 16; i++)
+    {
+        if(strcmp(tokens[2], regs[i]) == 0)
+        {   
+            temp |= i << SHIFT_REGSRC1;
+            break;
+        }
+    }
+
+    if(tokens[3][0] == '-')
+    {
+        temp |= 1 << SHIFT_FUNCODE; //substraction
+    }
+    else
+    {
+        temp |= 0 << SHIFT_FUNCODE; //addition
+    }
+
+    char* ptr = strchr(tokens[0], 'r');
+    if(ptr != NULL)
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            if(strcmp(ptr, regs[i]) == 0)
+            {   
+                temp |= i << SHIFT_REGSRC2;
+                break;
+            }
+        }
+    }
+    ptr = strchr(tokens[3], '#');
+    if(ptr != NULL)
+    {
+        temp |= atoi(ptr + 1);
+    }
+    
+    *instr |= temp;
+    return;
+}
+
+void pares_store(char** tokens, uint32_t* instr)
+{
+    uint32_t temp;
+    
+    temp = 0;
+    temp |= 1 << SHIFT_OPCODE;
+    
+    for(int i = 0; i < 16; i++)
+    {
+        if(strcmp(tokens[1], regs[i]) == 0)
+        {   
+            temp |= i << SHIFT_REGDEST;
+            break;
+        }
+    }
+
+    for(int i = 0; i < 16; i++)
+    {
+        if(strcmp(tokens[2], regs[i]) == 0)
+        {   
+            temp |= i << SHIFT_REGSRC1;
+            break;
+        }
+    }
+
+    if(tokens[3][0] == '-')
+    {
+        temp |= 1 << SHIFT_FUNCODE; //substraction
+    }
+    else
+    {
+        temp |= 0 << SHIFT_FUNCODE; //addition
+    }
+
+    char* ptr = strchr(tokens[0], 'r');
+    if(ptr != NULL)
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            if(strcmp(ptr, regs[i]) == 0)
+            {   
+                temp |= i << SHIFT_REGSRC2;
+                break;
+            }
+        }
+    }
+    ptr = strchr(tokens[3], '#');
+    if(ptr != NULL)
+    {
+        temp |= 1 << SHIFT_IMMD;
+        temp |= atoi(ptr + 1);
+    }
+    
+    *instr |= temp;
+    return;
+}
+
+
+void parse_branch(char** tokens, uint32_t* instr)
+{
+    uint32_t temp;
+    
+    temp = 0;
+    temp |= 3 << SHIFT_OPCODE;
+
+    uint32_t offset = atoi(tokens[1]) & 0x03FFFFFF;
+    temp |= offset;
+    *instr = temp;
+    return;
+}
+
+void parse_dataproc(char** tokens, uint32_t* instr)
+{
+    uint32_t temp = 0;
+    char* ptr;
+    temp |= 0 << SHIFT_OPCODE;
+    
+    for(int i = 0; i < 8; i++)
+    {
+        if(strncmp(tokens[0], aluop[i], 3) == 0)
+        {
+            temp |= i << SHIFT_FUNCODE;
+            break;
+        }
+    }
+
+    for(int i = 0; i < 16; i++)
+    {
+        if(strncmp(tokens[1], regs[i], strlen(regs[i])) == 0)
+        {
+            temp |= i << SHIFT_REGDEST;
+            break;
+        }
+    }
+
+    for(int i = 0; i < 16; i++)
+    {
+        if(strncmp(tokens[2], regs[i], strlen(regs[i])) == 0)
+        {
+            temp |= i << SHIFT_REGSRC1;
+            break;
+        }
+    }
+
+    ptr = strchr(tokens[3], 'r');
+    if(ptr != NULL)
+    {
+        for(int i = 0; i < 16; i++)
+        {
+            if(strncmp(ptr, regs[i], strlen(regs[i])) == 0)
+            {
+                temp |= i << SHIFT_REGSRC1;
+                break;
+            }
+        }
+    }
+
+    ptr = strchr(tokens[3], '#');
+    if(ptr != NULL)
+    {
+        temp |= 1 << SHIFT_IMMD;
+        temp |= atoi(ptr + 1);
+    }
+
+}
 
 void parse_instruction(char* line, uint32_t* instr)
 {
     char** tokens = split_str(line, ' ');
+    *instr = 0;
 
+    parse_flag(tokens, instr);
+    
     if(strncmp(tokens[0], "ldr", 3) == 0)
     {
         parse_load(tokens, instr);
@@ -170,7 +373,7 @@ void generate_binary(FILE* input, FILE* output)
     while(fgets(line, MAX_LINE, input))
     {
         line[strlen(line) - 1] = '\0';
-        parse_instruction(line, instr, instr_count);
+        parse_instruction(line, instr);
         instr_count++;
     }
 }

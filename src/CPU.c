@@ -30,7 +30,7 @@ void decode()
 	if(cpu.decoder.opcode == OP_BRC)
 	{
 		cpu.rfile.src1_index = 15;
-		cpu.rfile.immediate = cpu.ir & MASK_BRCH_IMMD;
+		cpu.rfile.immediate = convert_28_to_32(cpu.ir);
 		cpu.rfile.dest_index = 15;
 	}		
 	else
@@ -57,7 +57,7 @@ void execute()
 		return;
 	}
 
-	/// If it is not brach instruction
+	// If it is not brach instruction
 	cpu.alu.src1 = cpu.rfile.r[cpu.rfile.src1_index];
 
 	if(cpu.decoder.func & (uint8_t)FUNC_IMMD_MASK)
@@ -151,5 +151,5 @@ void display_regs()
 	{
 		fprintf(stdout, "r%d = %d\n", i, cpu.rfile.r[i]);
 	}
-	fprintf(stdout, "psw = %d\n", cpu.alu.flags);
+	fprintf(stdout, "psw = %X\n", cpu.alu.flags);
 }
