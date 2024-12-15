@@ -153,7 +153,7 @@ void parse_load(char** tokens, uint32_t* instr)
     
     for(int i = 0; i < 16; i++)
     {
-        if(strcmp(tokens[1], regs[i]) == 0)
+        if(strncmp(tokens[1], regs[i], strlen(regs[i])) == 0)
         {   
             temp |= i << SHIFT_REGDEST;
             break;
@@ -162,7 +162,7 @@ void parse_load(char** tokens, uint32_t* instr)
 
     for(int i = 0; i < 16; i++)
     {
-        if(strcmp(tokens[2], regs[i]) == 0)
+        if(strncmp(tokens[2], regs[i], strlen(regs[i])) == 0)
         {   
             temp |= i << SHIFT_REGSRC1;
             break;
@@ -183,7 +183,7 @@ void parse_load(char** tokens, uint32_t* instr)
     {
         for(int i = 0; i < 16; i++)
         {
-            if(strcmp(ptr, regs[i]) == 0)
+            if(strncmp(ptr, regs[i], strlen(regs[i])) == 0)
             {   
                 temp |= i << SHIFT_REGSRC2;
                 break;
@@ -193,6 +193,7 @@ void parse_load(char** tokens, uint32_t* instr)
     ptr = strchr(tokens[3], '#');
     if(ptr != NULL)
     {
+        temp |= 1 << SHIFT_IMMD;
         temp |= atoi(ptr + 1);
     }
     
@@ -239,7 +240,7 @@ void parse_store(char** tokens, uint32_t* instr)
     {
         for(int i = 0; i < 16; i++)
         {
-            if(strcmp(ptr, regs[i]) == 0)
+            if(strncmp(ptr, regs[i], strlen(regs[i])) == 0)
             {   
                 temp |= i << SHIFT_REGSRC2;
                 break;
@@ -264,10 +265,10 @@ void parse_branch(char** tokens, uint32_t* instr)
     
     temp = 0;
     temp |= 3 << SHIFT_OPCODE;
-
-    uint32_t offset = atoi(tokens[1]) & 0x03FFFFFF;
+    
+    uint32_t offset = atoi(tokens[1] + 1) & 0x03FFFFFF;
     temp |= offset;
-    *instr = temp;
+    *instr |= temp;
     return;
 }
 
@@ -312,7 +313,7 @@ void parse_dataproc(char** tokens, uint32_t* instr)
         {
             if(strncmp(ptr, regs[i], strlen(regs[i])) == 0)
             {
-                temp |= i << SHIFT_REGSRC1;
+                temp |= i << SHIFT_REGSRC2;
                 break;
             }
         }
