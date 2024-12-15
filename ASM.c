@@ -2,31 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "../include/Decoder.h"
+
+#include "include/Decoder.h"
 
 #define MAX_LINE 100
 
 uint32_t instr_count = 0;
-
-typedef enum COND_FIELD{
-    EQ,
-    NOT_EQ,
-    CARRY_SET,
-    CARRY_CLEAR,
-    MINUS,
-    PLUS,
-    OVERFLOW_SET,
-    OVERFLOW_CLEAR,
-    HIGHER,
-    LESS_SAME,
-    GREATER_EQ,
-    LESS_THAN,
-    GREATER_THAN,
-    LESS_EQ,
-    ALWAYS,
-    NEVER,
-};
+bool error_occured = 0;
 
 char* regs[16] = {"r0", "r1", "r2", "r3",
                   "r4", "r5", "r6", "r7",
@@ -45,7 +29,13 @@ uint32_t instr;
 
 void fatal_error(const char* msg)
 {
-    fprintf(stderr, "[ERROR]%s ===> %d\n", msg, instr_count);
+    fprintf(stderr, "[ERROR]%s\n", msg);
+    exit(EXIT_FAILURE);
+}
+
+void syntrax_error(const char* msg)
+{
+    fprintf(stderr, "[SYNTRAX-ERROR]line %d\n", instr_count);
     exit(EXIT_FAILURE);
 }
 
@@ -210,7 +200,7 @@ void parse_load(char** tokens, uint32_t* instr)
     return;
 }
 
-void pares_store(char** tokens, uint32_t* instr)
+void parse_store(char** tokens, uint32_t* instr)
 {
     uint32_t temp;
     
@@ -219,7 +209,7 @@ void pares_store(char** tokens, uint32_t* instr)
     
     for(int i = 0; i < 16; i++)
     {
-        if(strcmp(tokens[1], regs[i]) == 0)
+        if(strncmp(tokens[1], regs[i], strlen(regs[i])) == 0)
         {   
             temp |= i << SHIFT_REGDEST;
             break;
@@ -228,7 +218,7 @@ void pares_store(char** tokens, uint32_t* instr)
 
     for(int i = 0; i < 16; i++)
     {
-        if(strcmp(tokens[2], regs[i]) == 0)
+        if(strncmp(tokens[2], regs[i], strlen(regs[i])) == 0)
         {   
             temp |= i << SHIFT_REGSRC1;
             break;
@@ -283,6 +273,7 @@ void parse_branch(char** tokens, uint32_t* instr)
 
 void parse_dataproc(char** tokens, uint32_t* instr)
 {
+
     uint32_t temp = 0;
     char* ptr;
     temp |= 0 << SHIFT_OPCODE;
@@ -334,10 +325,13 @@ void parse_dataproc(char** tokens, uint32_t* instr)
         temp |= atoi(ptr + 1);
     }
 
+    *instr |= temp;
+
 }
 
 void parse_instruction(char* line, uint32_t* instr)
 {
+    printf("%s\n", line);
     char** tokens = split_str(line, ' ');
     *instr = 0;
 
@@ -370,31 +364,35 @@ void parse_instruction(char* line, uint32_t* instr)
 
 void generate_binary(FILE* input, FILE* output)
 {
+    uint32_t instr;
     while(fgets(line, MAX_LINE, input))
     {
+        instr = 0;
+        if(strcmp(line, "\n") == 0) continue;
         line[strlen(line) - 1] = '\0';
-        parse_instruction(line, instr);
-        instr_count++;
+        parse_instruction(line, &instr);
+        fwrite(&instr, sizeof(uint32_t), 1, output);
+        instr_count++; 
     }
 }
 
 
 int main(int argc, char** argv)
 {
-    if(argc == 2)
+    if(argc != 3)
     {
-        fprintf(stderr, "[ERROR] provide input file!\n");
-        exit(EXIT_FAILURE);
+        printf("%d\n", argc);
+        fatal_error("Usage: ./ASM [input_file] [output_file]");
     }
 
-    char* ptr = strchr(argv[1], '.');
-    char* str = &argv[1];
-    strncpy(dest_filename, argv[1], str - ptr);
-    strcat(dest_filename, ".bin");
-
+    
     FILE* source = fopen(argv[1], "r");
     
-    FILE* destination = fopen(dest_filename, "wb");
+    FILE* destination = fopen(argv[2], "wb");
 
+    generate_binary(source, destination);
+
+    fclose(source);
+    fclose(destination);
     
 }

@@ -1,0 +1,5 @@
+xor r1 r1 r1
+add r1 r1 #2
+xors r2 r2 r2
+addgt r2 r2 r1
+addeq r3 r1 r2
