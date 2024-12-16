@@ -33,9 +33,9 @@ void fatal_error(const char* msg)
     exit(EXIT_FAILURE);
 }
 
-void syntrax_error(const char* msg)
+void syntrax_error(const char* line)
 {
-    fprintf(stderr, "[SYNTRAX-ERROR]line %d\n", instr_count);
+    fprintf(stderr, "[SYNTRAX-ERROR]%s %d\n", line, instr_count);
     exit(EXIT_FAILURE);
 }
 
@@ -336,10 +336,15 @@ void parse_instruction(char* line, uint32_t* instr)
     char** tokens = split_str(line, ' ');
     *instr = 0;
 
-    if(strcmp(tokens[0], "out") == 0)
+    if(strncmp(tokens[0], "out", strlen("out")) == 0)
     {
         *instr = 0xFFFFFFFF;
-
+        return;
+    }
+    if(strncmp(tokens[0], "hlt", strlen("hlt")) == 0)
+    {
+        *instr = 0;
+        return;
     }
 
     

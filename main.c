@@ -12,6 +12,11 @@ int main(int argc, char** argv)
     FILE* file = fopen(argv[1], "rb");
 
     int c = fread(mem, sizeof(uint32_t), MEM_SIZE, file);
+
+    for(int i = 0; i < mem[i] != 0; i++)
+    {
+        printf("%d : %X\n", i, mem[i]);
+    }
     
     fclose(file);
 

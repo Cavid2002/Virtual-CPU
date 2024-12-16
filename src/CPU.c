@@ -9,7 +9,7 @@ CPU cpu;
 void fetch()
 {
 	cpu.pc = cpu.rfile.r[15];
-	cpu.rfile.r[15] += 4;
+	cpu.rfile.r[15] += 1;
 	cpu.ir = mem[cpu.pc]; 
 }
 
@@ -130,7 +130,7 @@ void cpu_init()
 	cpu.alu = alu_init();
 	cpu.decoder = decoder_init();
 	cpu.rfile = registers_init();
-	cpu.pc = 4096;
+	cpu.pc = 0;
 	cpu.mar = 0;
 	cpu.ir = 0;
 	cpu.mbr = 0; 

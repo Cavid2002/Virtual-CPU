@@ -14,3 +14,5 @@ ldr r3, r1, -#255
 str r5, r1, #1
 
 brclt #-6
+
+out
