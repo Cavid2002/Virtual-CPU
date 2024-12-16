@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "../include/CPU.h"
 
 uint32_t mem[MEM_SIZE];
@@ -19,7 +20,10 @@ void decode()
 		display_regs();
 		cpu.decoder.flag_res = 0;
 	}
-
+	else if(cpu.ir == 0)
+	{
+		exit(0);
+	}
 
 	cpu.decoder.cond = (cpu.ir & MASK_COND) >> SHIFT_COND;
 	cpu.decoder.opcode = (cpu.ir & MASK_OPCODE) >> SHIFT_OPCODE;
@@ -30,7 +34,7 @@ void decode()
 	if(cpu.decoder.opcode == OP_BRC)
 	{
 		cpu.rfile.src1_index = 15;
-		cpu.rfile.immediate = convert_28_to_32(cpu.ir);
+		cpu.rfile.immediate = convert_26_to_32(cpu.ir);
 		cpu.rfile.dest_index = 15;
 	}		
 	else

@@ -78,4 +78,4 @@ uint8_t greater(uint8_t flag);
 uint8_t less_equal(uint8_t flag);
 uint8_t always(uint8_t flag);
 
-uint32_t convert_28_to_32(uint32_t instr);
+uint32_t convert_26_to_32(uint32_t instr);

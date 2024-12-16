@@ -336,6 +336,13 @@ void parse_instruction(char* line, uint32_t* instr)
     char** tokens = split_str(line, ' ');
     *instr = 0;
 
+    if(strcmp(tokens[0], "out") == 0)
+    {
+        *instr = 0xFFFFFFFF;
+
+    }
+
+    
     parse_flag(tokens, instr);
     
     if(strncmp(tokens[0], "ldr", 3) == 0)

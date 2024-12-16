@@ -13,6 +13,8 @@ int main(int argc, char** argv)
 
     int c = fread(mem, sizeof(uint32_t), MEM_SIZE, file);
     
+    fclose(file);
+
     cpu_init();
     cpu_loop();
     return 0;
