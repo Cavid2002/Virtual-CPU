@@ -1,18 +1,7 @@
-
 xor r1, r1, r1
-
 add r1, r1, #2
-
-xors r2, r2, r2
-
-subsgt r2, r2, r1
-
-addeq r3, r1, r2
-
-ldr r3, r1, -#255
-
-str r5, r1, #1
-
-brclt #-6
-
+xor r2, r2, r2
+add r2, r2, #3
+subs r1, r1, r2
+addlt r6, r6, #1
 out

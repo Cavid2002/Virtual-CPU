@@ -46,13 +46,24 @@ RegFile registers_init()
 
 uint32_t convert_26_to_32(uint32_t instr)
 {
-    uint32_t offset = instr & MASK_BRCH_IMMD;
-    if(offset & (1 << 25))
+    uint32_t res = instr & MASK_BRCH_IMMD;
+    if(res & (1 << 25))
     {
-        offset |= ~MASK_BRCH_IMMD;
+        res |= ~MASK_BRCH_IMMD;
     }
-    return offset;
+    return res;
 }
+
+uint32_t convert_12_to_32(uint32_t instr)
+{
+    uint32_t res = instr & MASK_IMMD;
+    if(res & (1 << 11))
+    {
+        res |= ~MASK_IMMD;
+    }
+    return res;
+}
+
 
 uint8_t equal(uint8_t flag)
 {

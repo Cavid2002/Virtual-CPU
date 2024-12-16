@@ -23,7 +23,6 @@ char* cond_prefix[16] = {"eq", "ne", "cs", "cc",
                         "hi", "ls", "ge", "lt",
                         "gt", "le", "al", NULL};
 
-char dest_filename[MAX_LINE];
 char line[MAX_LINE];
 uint32_t instr;
 
@@ -150,6 +149,7 @@ void parse_load(char** tokens, uint32_t* instr)
     
     temp = 0;
     temp |= 2 << SHIFT_OPCODE;
+    temp |= 0 << SHIFT_FUNCODE;
     
     for(int i = 0; i < 16; i++)
     {
@@ -169,16 +169,8 @@ void parse_load(char** tokens, uint32_t* instr)
         }
     }
 
-    if(tokens[3][0] == '-')
-    {
-        temp |= 1 << SHIFT_FUNCODE; //substraction
-    }
-    else
-    {
-        temp |= 0 << SHIFT_FUNCODE; //addition
-    }
 
-    char* ptr = strchr(tokens[0], 'r');
+    char* ptr = strchr(tokens[3], 'r');
     if(ptr != NULL)
     {
         for(int i = 0; i < 16; i++)
@@ -207,6 +199,8 @@ void parse_store(char** tokens, uint32_t* instr)
     
     temp = 0;
     temp |= 1 << SHIFT_OPCODE;
+    temp |= 0 << SHIFT_FUNCODE;    
+
     
     for(int i = 0; i < 16; i++)
     {
@@ -226,16 +220,9 @@ void parse_store(char** tokens, uint32_t* instr)
         }
     }
 
-    if(tokens[3][0] == '-')
-    {
-        temp |= 1 << SHIFT_FUNCODE; //substraction
-    }
-    else
-    {
-        temp |= 0 << SHIFT_FUNCODE; //addition
-    }
 
-    char* ptr = strchr(tokens[0], 'r');
+
+    char* ptr = strchr(tokens[3], 'r');
     if(ptr != NULL)
     {
         for(int i = 0; i < 16; i++)

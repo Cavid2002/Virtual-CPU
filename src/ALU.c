@@ -19,19 +19,19 @@ ALU alu_init()
 
 uint8_t set_flag_register(uint32_t src1, uint32_t src2, uint32_t res)
 {
-	uint8_t new_flag = 0;
-	uint8_t msb_src1 = src1 >> 31;
-	uint8_t msb_src2 = src2 >> 31;
-	uint8_t msb_res = res >> 31;
+    uint8_t new_flag = 0;
+    uint8_t msb_src1 = src1 >> 31; // MSB of src1
+    uint8_t msb_src2 = src2 >> 31; // MSB of src2
+    uint8_t msb_res = res >> 31;   // MSB of res
 
+    new_flag |= msb_res; // N (Negative flag)
+    new_flag |= ((!res) << 1); // Z (Zero flag)
+    new_flag |= (src1 >= src2) ? 1 << 2 : 0; // C (Carry flag for subtraction)
+    new_flag |= ((msb_res ^ msb_src1) & (msb_src1 ^ msb_src2)) << 3; // V (Overflow flag)
 
-	new_flag |= msb_res; //N
-	new_flag |= ((!res) << 1); //Z
-	new_flag |= (src1 > res)? 1 << 2 : 0; // C
-	new_flag |= ((msb_res ^ msb_src1) & (msb_res ^ msb_src2)) << 3; // V
-
-	return new_flag;
+    return new_flag;
 }
+
 
 uint32_t add(uint32_t src1, uint32_t src2)
 {
@@ -40,7 +40,7 @@ uint32_t add(uint32_t src1, uint32_t src2)
 
 uint32_t sub(uint32_t src1, uint32_t src2)
 {
-	return src1 - src2;
+	return src1 + (-src2);
 }
 
 

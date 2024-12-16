@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../include/CPU.h"
 
-uint32_t mem[MEM_SIZE];
+uint32_t mem[MEM_SIZE] = { 0 };
 
 CPU cpu;
 
@@ -19,6 +19,7 @@ void decode()
 	{
 		display_regs();
 		cpu.decoder.flag_res = 0;
+		return;
 	}
 	else if(cpu.ir == 0)
 	{
@@ -42,7 +43,7 @@ void decode()
 		cpu.rfile.dest_index = (cpu.ir & MASK_REGDEST) >> SHIFT_REGDEST;
 		cpu.rfile.src1_index = (cpu.ir & MASK_REGSRC1) >> SHIFT_REGSRC1;
 		cpu.rfile.src2_index = (cpu.ir & MASK_REGSRC2) >> SHIFT_REGSRC2;
-		cpu.rfile.immediate = (cpu.ir & MASK_IMMD);
+		cpu.rfile.immediate = convert_12_to_32(cpu.ir);
 	}
 	
 }
@@ -78,7 +79,10 @@ void execute()
 	cpu.alu.res = cpu.alu.op[cpu.alu.opcode](cpu.alu.src1, cpu.alu.src2);
 
 	if(cpu.decoder.func & (uint8_t)FUNC_FLAG_MASK)
-	{
+	{	
+		if(cpu.alu.opcode == 1) // checking for substraction looks ugly whatever
+		cpu.alu.flags = set_flag_register(cpu.alu.src1, -(cpu.alu.src2), cpu.alu.res);
+		else
 		cpu.alu.flags = set_flag_register(cpu.alu.src1, cpu.alu.src2, cpu.alu.res);
 	}
 	
