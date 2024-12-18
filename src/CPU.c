@@ -80,10 +80,14 @@ void execute()
 
 	if(cpu.decoder.func & (uint8_t)FUNC_FLAG_MASK)
 	{	
-		if(cpu.alu.opcode == 1) // checking for substraction looks ugly whatever
-		cpu.alu.flags = set_flag_register(cpu.alu.src1, -(cpu.alu.src2), cpu.alu.res);
+		if(cpu.alu.opcode == 1)// checking for substraction looks ugly but whatever
+		{
+			cpu.alu.flags = set_flag_register(cpu.alu.src1, -(cpu.alu.src2), cpu.alu.res);
+		}
 		else
-		cpu.alu.flags = set_flag_register(cpu.alu.src1, cpu.alu.src2, cpu.alu.res);
+		{
+			cpu.alu.flags = set_flag_register(cpu.alu.src1, cpu.alu.src2, cpu.alu.res);
+		}
 	}
 	
 }

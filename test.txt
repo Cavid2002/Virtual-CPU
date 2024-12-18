@@ -1,7 +1,12 @@
-xor r1, r1, r1
-add r1, r1, #2
-xor r2, r2, r2
-add r2, r2, #3
-subs r1, r1, r2
-addlt r6, r6, #1
+.const
+
+
+
+.text
+xor r1 r1 r1
+add r1 r1 #2
+xor r2 r2 r2
+add r2 r2 #3
+subs r1 r1 r2
+addlt r6 r6 #123
 out
