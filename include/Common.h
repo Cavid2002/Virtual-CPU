@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+
 
 #define CODE_SEGMENT 1
 #define CONST_SEGMENT 2
@@ -26,6 +28,10 @@ void free_tokens(char** tokens);
 
 void fatal_error(const char* msg);
 void check_synerr(const char* msg, bool* flag);
-void parse_instruction(char* line, uint32_t* instr);
-void parse_immd(char* line, uint32_t* instr);
+char* remove_space(char* line);
+
+void parse_instruction(char* line, FILE* dest_file);
+void parse_immd(char* line, FILE* dest_file);
+
 uint32_t uncoditional_brch(uint32_t offset);
+uint32_t find_label(char* name);

@@ -1,22 +1,20 @@
 #include "../include/Common.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 Label ltable[MAX_LABEL];
 uint32_t lcount = 0;
 
-int check_label_exists(char* name)
+uint32_t find_label(char* name)
 {
     for(int i = 0; i < lcount; i++)
     {
         if(strncmp(ltable[i].name, name, strlen(name)) == 0)
         {
-            return 1;
+            return i;
         }
-        
     }
-    return 0;
+    return -1;
 }
 
 void create_label(char** tokens)
@@ -28,15 +26,22 @@ void create_label(char** tokens)
     ltable[lcount++] = new_label; 
 }
 
-void parse_immd(char* line, uint32_t* immd)
+void parse_immd(char* line, FILE* dest_file)
 {
     char** tokens = split_str(line, ' ');
+    uint32_t immd = 0;
     
     bool flag = 1;
-    if(check_label_exists(tokens[0]) == 1) check_synerr("overwriting label", &flag);
+    if(find_label(tokens[0]) != -1) check_synerr("overwriting label", &flag);
     
     create_label(tokens);
-    *immd = atoi(tokens[1]);
+    for(int i = 1; tokens[i] != NULL; i++)
+    {
+        immd = atoi(tokens[i] + 1);
+        fwrite(&immd, sizeof(uint32_t), 1, dest_file);
+    }
 
     free_tokens(tokens);
+
+    return;
 }

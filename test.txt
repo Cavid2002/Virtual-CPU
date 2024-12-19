@@ -1,12 +1,12 @@
 .const
-
-
+    var #100000
+    var2 #244
 
 .text
-xor r1 r1 r1
-add r1 r1 #2
-xor r2 r2 r2
-add r2 r2 #3
-subs r1 r1 r2
-addlt r6 r6 #123
-out
+    mov r1 #0
+    mov r2 #10
+    add r3 r3 r1
+    add r1 r1 #1
+    subs r9 r2 r1
+    brcgt #-4
+    out

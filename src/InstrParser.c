@@ -2,7 +2,6 @@
 #include "../include/Common.h"
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -103,67 +102,58 @@ void parse_flag(char** tokens, int* instr)
 }
 
 
+int get_regs(char* reg)
+{
+    for(int i = 0; i < 16; i++)
+    {
+        if(compare_string(reg, regs[i]) == 1)
+        {   
+            return i;
+        }
+    }
+    fatal_error(reg);
+    return -1;
+}
+
+int get_immd(char* immd)
+{
+    uint32_t res = atoi(immd + 1);
+    return res;
+}
+
 void parse_load(char** tokens, uint32_t* instr)
 {
     uint32_t temp;
-    
+    uint32_t dst, src1, src2, immd;    
     temp = 0;
     temp |= 2 << SHIFT_OPCODE;
     temp |= 0 << SHIFT_FUNCODE;
     
-    bool synerr_flag = 1;
-
-    for(int i = 0; i < 16; i++)
-    {
-        if(compare_string(tokens[1], regs[i]) == 1)
-        {   
-            temp |= i << SHIFT_REGDEST;
-            synerr_flag = 0;
-            break;
-        }
-    }
+    dst = get_regs(tokens[1]);
+    src1 = get_regs(tokens[2]);
     
-    check_synerr(tokens[1], &synerr_flag);
+    temp |= dst << SHIFT_REGDEST;
+    temp |= src1 << SHIFT_REGSRC1;
 
-    for(int i = 0; i < 16; i++)
+    
+    if(strchr(tokens[3], 'r') != NULL)
     {
-        if(compare_string(tokens[2], regs[i]) == 1)
-        {   
-            temp |= i << SHIFT_REGSRC1;
-            synerr_flag = 0;
-            break;
-        }
-    }
-
-    check_synerr(tokens[2], &synerr_flag);
-
-    char* ptr = strchr(tokens[3], 'r');
-    if(ptr != NULL)
-    {
-        for(int i = 0; i < 16; i++)
-        {
-            if(compare_string(tokens[3], regs[i]) == 1)
-            {   
-                temp |= i << SHIFT_REGSRC2;
-                synerr_flag = 1;
-                break;
-            }
-        }
-        check_synerr(tokens[3], &synerr_flag);
+        src2 = get_regs(tokens[3]);
+        temp |= src2 << SHIFT_REGSRC2;
         *instr |= temp;
         return;
     }
-
-
-    ptr = strchr(tokens[3], '#');
-    if(ptr != NULL)
+    
+    if(strchr(tokens[3], '#') != NULL)
     {
         temp |= 1 << SHIFT_IMMD;
-        temp |= atoi(ptr + 1);
-        *instr |= temp;
+        temp |= get_immd(tokens[3]); 
+        *instr |= temp;  
+        return;
     }
-    
-    
+
+    fatal_error(tokens[3]);
+
     return;
 }
 
@@ -172,63 +162,37 @@ void parse_load(char** tokens, uint32_t* instr)
 void parse_store(char** tokens, uint32_t* instr)
 {
     uint32_t temp;
-    
+    uint32_t dst, src1, src2, immd;   
+
     temp = 0;
     temp |= 1 << SHIFT_OPCODE;
     temp |= 0 << SHIFT_FUNCODE;    
 
-    bool synerr_flag = 1;
-
-    for(int i = 0; i < 16; i++)
-    {
-        if(compare_string(tokens[1], regs[i]) == 1)
-        {   
-            temp |= i << SHIFT_REGDEST;
-            synerr_flag = 0;
-            break;
-        }
-    }
+    dst = get_regs(tokens[1]);
+    src1 = get_regs(tokens[2]);
     
-    check_synerr(tokens[1], &synerr_flag);
+    temp |= dst << SHIFT_REGDEST;
+    temp |= src1 << SHIFT_REGSRC1;
 
-    for(int i = 0; i < 16; i++)
+    
+    if(strchr(tokens[3], 'r') != NULL)
     {
-        if(compare_string(tokens[2], regs[i]) == 1)
-        {   
-            temp |= i << SHIFT_REGSRC1;
-            synerr_flag = 0;
-            break;
-        }
-    }
-
-    check_synerr(tokens[2], &synerr_flag);
-
-    char* ptr = strchr(tokens[3], 'r');
-    if(ptr != NULL)
-    {
-        for(int i = 0; i < 16; i++)
-        {
-            if(compare_string(tokens[3], regs[i]) == 1)
-            {   
-                temp |= i << SHIFT_REGSRC2;
-                synerr_flag = 1;
-                break;
-            }
-        }
-        check_synerr(tokens[3], &synerr_flag);
+        src2 = get_regs(tokens[3]);
+        temp |= src2 << SHIFT_REGSRC2;
         *instr |= temp;
         return;
     }
-
-
-    ptr = strchr(tokens[3], '#');
-    if(ptr != NULL)
+    
+    if(strchr(tokens[3], '#') != NULL)
     {
         temp |= 1 << SHIFT_IMMD;
-        temp |= atoi(ptr + 1);
-        *instr |= temp;
+        temp |= get_immd(tokens[3]);
+        *instr |= temp;  
+        return;
     }
-    
+
+    fatal_error(tokens[3]);
+
     return;
 }
 
@@ -251,7 +215,8 @@ void parse_branch(char** tokens, uint32_t* instr)
 void parse_dataproc(char** tokens, uint32_t* instr)
 {
     uint32_t temp = 0;
-    char* ptr;
+    uint32_t dst, src1, src2, immd;   
+
     temp |= 0 << SHIFT_OPCODE;
     
     bool synerr_flag = 1;
@@ -260,106 +225,124 @@ void parse_dataproc(char** tokens, uint32_t* instr)
         if(strncmp(tokens[0], aluop[i], 3) == 0)
         {
             temp |= i << SHIFT_FUNCODE;
-            synerr_flag = 0;
             break;
         }
     }
 
-    check_synerr(tokens[0], &synerr_flag);
-
-    for(int i = 0; i < 16; i++)
-    {
-        if(compare_string(tokens[1], regs[i]) == 1)
-        {
-            temp |= i << SHIFT_REGDEST;
-            synerr_flag = 0;
-            break;
-        }
-    }
-
-    check_synerr(tokens[1], &synerr_flag);
-
-    for(int i = 0; i < 16; i++)
-    {
-        if(compare_string(tokens[2], regs[i]) == 1)
-        {
-            temp |= i << SHIFT_REGSRC1;
-            synerr_flag = 0;
-            break;
-        }
-    }
+    dst = get_regs(tokens[1]);
+    src1 = get_regs(tokens[2]);
     
-    check_synerr(tokens[2], &synerr_flag);
+    temp |= dst << SHIFT_REGDEST;
+    temp |= src1 << SHIFT_REGSRC1;
 
-    ptr = strchr(tokens[3], 'r');
-    if(ptr != NULL)
+    
+    if(strchr(tokens[3], 'r') != NULL)
     {
-        for(int i = 0; i < 16; i++)
-        {
-            if(compare_string(tokens[3], regs[i]) == 1)
-            {
-                temp |= i << SHIFT_REGSRC2;
-                synerr_flag = 0;
-                break;
-            }
-        }
-
-        check_synerr(tokens[3], &synerr_flag);
+        src2 = get_regs(tokens[3]);
+        temp |= src2 << SHIFT_REGSRC2;
         *instr |= temp;
         return;
     }
-
-    ptr = strchr(tokens[3], '#');
-    uint32_t immd;
-    if(ptr != NULL)
+    else if(strchr(tokens[3], '#') != NULL)
     {
         temp |= 1 << SHIFT_IMMD;
-        immd = atoi(ptr + 1);
-        if(immd > 4095) fatal_error("Const value cannot exceed 12 bits immd");
-        temp |= immd;
+        temp |= get_immd(tokens[3]); 
+        *instr |= temp;  
+        return;
     }
 
-    *instr |= temp;
-
+    fatal_error(tokens[3]);
+    
+    return;
+    
 }
 
-void parse_instruction(char* line, uint32_t* instr)
+void parse_mov(uint32_t* step1, uint32_t* step2, char** tokens)
 {
-    printf("%s\n", line);
+    uint32_t src = 0;
+    uint32_t dst = get_regs(tokens[1]);
+    *step1 |= 0 << SHIFT_OPCODE;
+    *step1 |= dst << SHIFT_REGDEST;
+    *step1 |= dst << SHIFT_REGSRC1;
+    *step1 |= dst << SHIFT_REGSRC2;
+    *step1 |= 4 << SHIFT_FUNCODE;
+
+
+    *step2 |= 0 << SHIFT_OPCODE;
+    *step2 |= dst << SHIFT_REGDEST;
+    *step2 |= dst << SHIFT_REGSRC1;
+    *step2 |= 0 << SHIFT_FUNCODE;
+
+    if(strchr(tokens[2], '#') != NULL)
+    {
+        src = get_immd(tokens[2]);
+        *step2 |= 1 << SHIFT_IMMD;
+        *step2 |= src;
+        return;
+    }
+
+    if(strchr(tokens[2], 'r') != NULL)
+    {
+        src = get_regs(tokens[2]);
+        *step2 |= src << SHIFT_REGSRC2;
+        return;
+    }
+
+    fatal_error(tokens[3]);
+    return;
+}
+
+
+void parse_instruction(char* line, FILE* dest_file)
+{
     char** tokens = split_str(line, ' ');
-    *instr = 0;
+    uint32_t instr = 0;
 
 
-    //pseudo instruction
+    //debug instruction
     if(strncmp(tokens[0], "out", strlen("out")) == 0)
     {
-        *instr = 0xFFFFFFFF;
+        instr = 0xFFFFFFFF;
+        fwrite(&instr, sizeof(instr), 1, dest_file);
         return;
     }
 
     
-    parse_flag(tokens, instr);
-    
+    parse_flag(tokens, &instr);
+    if(strncmp(tokens[0], "mov", 3) == 0)
+    {
+        uint32_t step1 = 0, step2 = 0;
+        step1 |= instr;
+        step2 |= instr;
+
+        parse_mov(&step1, &step2, tokens);
+
+        fwrite(&step1, sizeof(uint32_t), 1, dest_file);
+        fwrite(&step2, sizeof(uint32_t), 1, dest_file);
+        return;
+    }
+
     if(strncmp(tokens[0], "ldr", 3) == 0)
     {
-        parse_load(tokens, instr);
-        return;
+        parse_load(tokens, &instr);
     }
-    if(strncmp(tokens[0], "str", 3) == 0)
+    else if(strncmp(tokens[0], "str", 3) == 0)
     {
-        parse_store(tokens, instr);
-        return;
+        parse_store(tokens, &instr);
     }
-    if(strncmp(tokens[0], "brc", 3) == 0)
+    else if(strncmp(tokens[0], "brc", 3) == 0)
     {
-        parse_branch(tokens, instr);
-        return;
+        parse_branch(tokens, &instr);
     }
-    
+    else
+    {
+        parse_dataproc(tokens, &instr);
+    }
 
-    parse_dataproc(tokens, instr);
 
-
+    fwrite(&instr, sizeof(uint32_t), 1, dest_file);
 
     free_tokens(tokens);
+    
+
 }

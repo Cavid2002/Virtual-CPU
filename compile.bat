@@ -5,4 +5,5 @@ gcc main.c .\bin\CPU.o .\bin\Decoder.o .\bin\ALU.o -o .\CPU
 
 gcc -c .\src\Common.c -o .\bin\Common.o
 gcc -c .\src\InstrParser.c -o .\bin\InstrParser.o
-gcc ASM.c .\bin\InstrParser.o .\bin\Common.o -o ASM
+gcc -c .\src\ImmdParser.c -o .\bin\ImmdParser.o
+gcc ASM.c .\bin\InstrParser.o .\bin\ImmdParser.o .\bin\Common.o -o ASM

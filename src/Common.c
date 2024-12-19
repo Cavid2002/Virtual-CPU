@@ -9,7 +9,7 @@ uint32_t instr_count = 0;
 
 void fatal_error(const char* msg)
 {
-    fprintf(stderr, "[ERROR]%s line %lu!\n", msg, line_count);
+    fprintf(stderr, "[ERROR] %s at line %lu!\n", msg, line_count);
     exit(EXIT_FAILURE);
 }
 
@@ -20,9 +20,19 @@ void check_synerr(const char* msg, bool* flag)
         *flag = 1;
         return;
     }
-    fprintf(stderr, "[SYNTRAX-ERROR]%s at line %lu!\n", msg, line_count);
-    exit(EXIT_FAILURE);
-    
+    fatal_error(msg);
+}
+
+char* remove_space(char* line)
+{
+    for(int i = 0; i < strlen(line); i++)
+    {
+        if(line[i] != ' ')
+        {
+            return line + i;
+        }
+    }
+    return NULL;
 }
 
 
