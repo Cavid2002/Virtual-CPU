@@ -17,7 +17,7 @@ char* aluop[8] = {"add", "sub", "orr",
                 "and", "xor", "lsh", "rsh"};
 
                 
-char* cond_prefix[16] = {"eq", "ne", "cs", "cc", 
+char* cond_prefix[16] = {"eq", "ne", "hs", "lo", 
                         "mi", "pl", "vs", "vc", 
                         "hi", "ls", "ge", "lt",
                         "gt", "le", "al", NULL};
@@ -117,7 +117,7 @@ int get_regs(char* reg)
 
 int get_immd(char* immd)
 {
-    uint32_t res = atoi(immd + 1);
+    uint32_t res = atoi(immd + 1) & 0x00000FFF;
     return res;
 }
 
@@ -246,14 +246,13 @@ void parse_dataproc(char** tokens, uint32_t* instr)
     else if(tokens[3][0] == '#')
     {
         temp |= 1 << SHIFT_IMMD;
-        temp |= get_immd(tokens[3]); 
+        temp |= get_immd(tokens[3]);
         *instr |= temp;  
         return;
     }
     else if(tokens[3][0] == '=')
     {
         uint32_t id = find_label(tokens[3] + 1);
-        printf("%lu\n", id);
         if(id == -1) fatal_error("label doesn't exists");
         temp |= 1 << SHIFT_IMMD;
         temp |= ltable[id].addr;
@@ -305,7 +304,7 @@ void parse_mov(uint32_t* step1, uint32_t* step2, char** tokens)
 
 void parse_instruction(char* line, FILE* dest_file)
 {
-    char** tokens = split_str(line, ' ');
+    char** tokens = split_str(line, " ");
     uint32_t instr = 0;
 
 

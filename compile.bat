@@ -1,3 +1,4 @@
+mkdir bin
 gcc -c .\src\CPU.c -o .\bin\CPU.o
 gcc -c .\src\ALU.c -o .\bin\ALU.o
 gcc -c .\src\Decoder.c -o .\bin\Decoder.o

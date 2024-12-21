@@ -29,7 +29,7 @@ void create_label(char** tokens)
 
 void parse_immd(char* line, FILE* dest_file)
 {
-    char** tokens = split_str(line, ' ');
+    char** tokens = split_str(line, " ");
     uint32_t immd = 0;
     
     bool flag = 1;

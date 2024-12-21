@@ -1,5 +1,6 @@
 bin/*
 .vscode
 *.bin
-ASM
 *.exe
+mpu
+mpu_asm

@@ -29,9 +29,9 @@ uint8_t set_flag_register(uint32_t src1, uint32_t src2, uint32_t res)
 
     new_flag |= ((res == 0) << 1); // Z
 
-	new_flag |= ((src2 > res) << 2); // C
+	new_flag |= (((uint64_t)src1 + (uint64_t)src2) >> 32) << 2; // C
 
-    new_flag |= ((msb_res ^ msb_src1) & (msb_src1 ^ msb_src2)) << 3; // V
+    new_flag |= ((msb_res ^ msb_src1) & (msb_res ^ msb_src2)) << 3; // V
 
     return new_flag;
 }

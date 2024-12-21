@@ -25,7 +25,7 @@ extern uint32_t instr_count;
 
 
 
-char** split_str(char* str, char c);
+char** split_str(char* str, char* delim);
 void free_tokens(char** tokens);
 
 void fatal_error(const char* msg);

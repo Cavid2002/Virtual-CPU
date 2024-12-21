@@ -36,42 +36,21 @@ char* remove_space(char* line)
 }
 
 
-char** split_str(char* str, char c)
+char** split_str(char* str, char* delim)
 {
-    char* p1 = str;
-    char* p2 = str;
-    int token_count = 0;
-    while(p1 != NULL)
+    char** tokens = calloc(20, sizeof(char*));
+    
+    char* temp = strtok(str, delim);
+    int c = 0;
+    while(temp != NULL)
     {
-        p1 = strchr(p1 + 1, c);
-        token_count++;
-    } 
-    char** tokens = (char**)malloc(sizeof(char*) * (token_count + 1));
-    if(token_count == 1)
-    {
-        tokens[0] = (char*)malloc(strlen(str) + 1);
-        strcpy(tokens[0], str);
-        tokens[1] = NULL;
-        return tokens;
+        tokens[c] = calloc(strlen(temp) + 1, sizeof(char));
+        strncpy(tokens[c], temp, strlen(temp) + 1);
+        temp = strtok(NULL, delim);
+        c++;
     }
-
-    for(int i = 0; 1; i++)
-    {
-        p1 = strchr(p2, c);
-        if(p1 == NULL)
-        {
-            tokens[i] = (char*)malloc(strlen(p2) + 1);
-            strcpy(tokens[i], p2);
-            break;
-        }
-        *p1 = '\0';
-        tokens[i] = (char*)malloc(strlen(p2) + 1);
-        strcpy(tokens[i], p2);
-        *p1 = c;
-        p2 = p1 + 1;
-
-    }
-    tokens[token_count] = NULL;
+    
+    tokens[c] = NULL;
     return tokens;
 }
 
@@ -101,7 +80,7 @@ void generate_binary(FILE* source_file, FILE* dest_file)
 
         line[strlen(line) - 1] = '\0';
         ptr = remove_space(line);
-        if(ptr == NULL)
+        if(ptr == NULL) 
         {
             continue;
         }
