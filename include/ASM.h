@@ -16,8 +16,10 @@ struct Label{
     uint32_t addr;
 };
 
-extern Label ltables[MAX_LABEL];
+extern Label ltable[MAX_LABEL];
 extern uint32_t lcount;
+extern uint32_t laddr;
+
 extern uint32_t line_count;
 extern uint32_t instr_count;
 
@@ -32,6 +34,7 @@ char* remove_space(char* line);
 
 void parse_instruction(char* line, FILE* dest_file);
 void parse_immd(char* line, FILE* dest_file);
+void generate_binary(FILE* source_file, FILE* dest_file);
 
 uint32_t uncoditional_brch(uint32_t offset);
 uint32_t find_label(char* name);

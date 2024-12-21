@@ -1,5 +1,5 @@
 #include "../include/Decoder.h"
-#include "../include/Common.h"
+#include "../include/ASM.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -236,18 +236,28 @@ void parse_dataproc(char** tokens, uint32_t* instr)
     temp |= src1 << SHIFT_REGSRC1;
 
     
-    if(strchr(tokens[3], 'r') != NULL)
+    if(tokens[3][0] == 'r')
     {
         src2 = get_regs(tokens[3]);
         temp |= src2 << SHIFT_REGSRC2;
         *instr |= temp;
         return;
     }
-    else if(strchr(tokens[3], '#') != NULL)
+    else if(tokens[3][0] == '#')
     {
         temp |= 1 << SHIFT_IMMD;
         temp |= get_immd(tokens[3]); 
         *instr |= temp;  
+        return;
+    }
+    else if(tokens[3][0] == '=')
+    {
+        uint32_t id = find_label(tokens[3] + 1);
+        printf("%lu\n", id);
+        if(id == -1) fatal_error("label doesn't exists");
+        temp |= 1 << SHIFT_IMMD;
+        temp |= ltable[id].addr;
+        *instr |= temp;
         return;
     }
 

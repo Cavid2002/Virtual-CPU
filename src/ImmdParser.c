@@ -1,9 +1,10 @@
-#include "../include/Common.h"
+#include "../include/ASM.h"
 #include <string.h>
 #include <stdlib.h>
 
 Label ltable[MAX_LABEL];
 uint32_t lcount = 0;
+uint32_t laddr = 1;
 
 uint32_t find_label(char* name)
 {
@@ -20,7 +21,7 @@ uint32_t find_label(char* name)
 void create_label(char** tokens)
 {
     Label new_label;
-    new_label.addr = lcount;
+    new_label.addr = laddr;
     new_label.name = calloc(sizeof(char), strlen(tokens[0]));
     strncpy(new_label.name, tokens[0], strlen(tokens[0]));
     ltable[lcount++] = new_label; 
@@ -39,9 +40,9 @@ void parse_immd(char* line, FILE* dest_file)
     {
         immd = atoi(tokens[i] + 1);
         fwrite(&immd, sizeof(uint32_t), 1, dest_file);
+        laddr++;
     }
 
     free_tokens(tokens);
-
     return;
 }
