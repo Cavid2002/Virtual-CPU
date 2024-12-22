@@ -1,4 +1,4 @@
-.const
+.data
     var #100 #200 #300 #400
     len #4
     res #0

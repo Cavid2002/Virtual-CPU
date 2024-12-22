@@ -3,9 +3,8 @@
 #include <stdio.h>
 
 
-#define CODE_SEGMENT 1
-#define CONST_SEGMENT 2
-#define DATA_SEGMENT 3
+#define CODE_SEGMENT 0
+#define DATA_SEGMENT 1
 
 #define MAX_LINE 100
 #define MAX_LABEL 1000

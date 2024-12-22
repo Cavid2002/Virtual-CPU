@@ -13,10 +13,10 @@ int main(int argc, char** argv)
 
     int c = fread(mem, sizeof(uint32_t), MEM_SIZE, file);
 
-    for(int i = 0; mem[i] != 0; i++)
-    {
-        printf("%d : %d %X\n", i, mem[i], mem[i]);
-    }
+    // for(int i = 0; mem[i] != 0; i++)
+    // {
+    //     printf("%d : %d %X\n", i, mem[i], mem[i]);
+    // }
     
     fclose(file);
 

@@ -1,6 +1,6 @@
-.const
+.data
     var #10
-    var2 #32
+    var2 #-32
 .text
     xor r0 r0 r0
     xor r1 r1 r1
@@ -10,7 +10,7 @@
     ldr r4 r0 #0
     ldr r5 r1 #0
     subs r8 r4 r5
-    addlt r10 r10 #252
+    addgt r10 r10 #252
     out
 
     

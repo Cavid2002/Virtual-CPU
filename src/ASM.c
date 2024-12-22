@@ -86,9 +86,9 @@ void generate_binary(FILE* source_file, FILE* dest_file)
         }
         
         
-        if(strncmp(ptr, ".const", strlen(".const")) == 0)
+        if(strncmp(ptr, ".data", strlen(".data")) == 0)
         {
-            segment_type = CONST_SEGMENT;
+            segment_type = DATA_SEGMENT;
             continue;
         }
         else if(strncmp(ptr, ".text", strlen(".text")) == 0)
@@ -99,7 +99,7 @@ void generate_binary(FILE* source_file, FILE* dest_file)
 
         
         if(segment_type == CODE_SEGMENT) parse_instruction(ptr, dest_file);
-        else if(segment_type == CONST_SEGMENT) parse_immd(ptr, dest_file);
+        else if(segment_type == DATA_SEGMENT) parse_immd(ptr, dest_file);
 
         instr_count++; 
     }
