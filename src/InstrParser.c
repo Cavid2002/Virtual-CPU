@@ -14,7 +14,7 @@ char* regs[16] = {"r0", "r1", "r2", "r3",
 char* opcode[4] = {"", "ldr", "str", "brc"};
 
 char* aluop[8] = {"add", "sub", "orr", 
-                "and", "xor", "lsh", "rsh"};
+                "and", "xor", "rsh", "lsh"};
 
                 
 char* cond_prefix[16] = {"eq", "ne", "hs", "lo", 

@@ -1,16 +1,18 @@
 .data
     var #10
-    var2 #-32
+    var2 #10
 .text
     xor r0 r0 r0
-    xor r1 r1 r1
     add r0 r0 =var
+    xor r1 r1 r1
     add r1 r1 =var2
+    xor r10 r10 r10
+    add r10 r10 #1
 
     ldr r4 r0 #0
     ldr r5 r1 #0
     subs r8 r4 r5
-    addgt r10 r10 #252
+    lsheq r10 r10 #2
     out
 
     
