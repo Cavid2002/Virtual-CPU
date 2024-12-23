@@ -131,3 +131,25 @@ r14 = 0
 r15 = 12
 psw = 1
 ```
+
+## Memory Layout: ##
+
+Unlike the traditional architectures Data segment is located in at the top of Address space. However first word of the executable in unconditional branch instruction that will jump over DATA segment without overwritting it. 
+
+```
++----------------+ High memory
+|                |
+|      Stack     |  
+|                |
++----------------+
+|       ⋮        |
++----------------+
+|      Heap      |  
++----------------+
+|                |
+|  Text Segment  |
+|                |
++----------------+
+|      Data      |
++----------------+ Low memory
+```

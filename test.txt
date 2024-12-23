@@ -1,6 +1,8 @@
 .data
     var #10
     var2 #10
+
+
 .text
     xor r0 r0 r0
     add r0 r0 =var
