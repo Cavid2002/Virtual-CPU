@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include "../include/ASM.h"
 
+extern uint32_t lcount;
 uint32_t line_count = 0;
-uint32_t instr_count = 0;
+uint32_t word_count = 0;
 
 
 void fatal_error(const char* msg)
@@ -38,7 +39,7 @@ char* remove_space(char* line)
 
 char** split_str(char* str, char* delim)
 {
-    char** tokens = calloc(20, sizeof(char*));
+    char** tokens = calloc(10, sizeof(char*));
     
     char* temp = strtok(str, delim);
     int c = 0;
@@ -65,47 +66,55 @@ void free_tokens(char** tokens)
 }
 
 
+void parse_into_binary(char* line, FILE* dest_file)
+{
+    if(strchr(line, ':'))
+    {
+        parse_label(line, dest_file);
+    }
+    else
+    {
+        parse_instruction(line, dest_file);
+    }
+}
+
+
 void generate_binary(FILE* source_file, FILE* dest_file)
 {
-    uint32_t foo = 0;
     char* line = malloc(MAX_LINE);
-    char* ptr, ptr2;
-
-    uint32_t segment_type = 0;
-    fwrite(&foo, sizeof(uint32_t), 1, dest_file);
-
+    char* ptr;
+    
     while(fgets(line, MAX_LINE, source_file))
     {
         line_count++;
-
-        line[strlen(line) - 1] = '\0';
         ptr = remove_space(line);
-        if(ptr == NULL) 
+        if(strncmp(ptr, "\n", 1) == 0) 
         {
             continue;
         }
-        
-        
-        if(strncmp(ptr, ".const", strlen(".const")) == 0)
-        {
-            segment_type = CONST_SEGMENT;
-            continue;
-        }
-        else if(strncmp(ptr, ".text", strlen(".text")) == 0)
-        {
-            segment_type = CODE_SEGMENT;
-            continue;
-        }
+        fill_ltable(ptr);
+    }   
 
-        
-        if(segment_type == CODE_SEGMENT) parse_instruction(ptr, dest_file);
-        else if(segment_type == CONST_SEGMENT) parse_immd(ptr, dest_file);
-
-        instr_count++; 
+    for(int i = 0; i < lcount; i++)
+    {
+        printf("%lu === %s\n", ltable[i].addr, ltable[i].name);
     }
 
-    fseek(dest_file, 0, SEEK_SET);
-    uint32_t offset = uncoditional_brch(laddr - 1);
-    fwrite(&offset, sizeof(uint32_t), 1, dest_file);
+    word_count = 0;
+    line_count = 0;
+    fseek(source_file, 0, SEEK_SET);
+
+    
+    while(fgets(line, MAX_LINE, source_file))
+    {
+        line_count++;
+        ptr = remove_space(line);
+        if(strncmp(ptr, "\n", 1) == 0) 
+        {
+            continue;
+        }
+
+        parse_into_binary(ptr, dest_file);
+    }
     
 }

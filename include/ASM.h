@@ -18,10 +18,8 @@ struct Label{
 
 extern Label ltable[MAX_LABEL];
 extern uint32_t lcount;
-extern uint32_t laddr;
-
 extern uint32_t line_count;
-extern uint32_t instr_count;
+extern uint32_t word_count;
 
 
 
@@ -32,8 +30,12 @@ void fatal_error(const char* msg);
 void check_synerr(const char* msg, bool* flag);
 char* remove_space(char* line);
 
+void parse_into_binary(char* line, FILE* dest_file);
 void parse_instruction(char* line, FILE* dest_file);
-void parse_immd(char* line, FILE* dest_file);
+void parse_label(char* line, FILE* dest_file);
+void fill_ltable(char* line);
+
+
 void generate_binary(FILE* source_file, FILE* dest_file);
 
 uint32_t uncoditional_brch(uint32_t offset);

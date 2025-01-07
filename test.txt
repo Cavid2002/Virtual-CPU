@@ -1,16 +1,13 @@
-.const
-    var #10
-    var2 #32
-.text
-    xor r0 r0 r0
-    xor r1 r1 r1
-    add r0 r0 =var
-    add r1 r1 =var2
 
-    ldr r4 r0 #0
-    ldr r5 r1 #0
-    subs r8 r4 r5
-    addlt r10 r10 #252
+main:
+    add r1 r0 =var
+    ldr r2 r1 #0
+    ldr r3 r1 #1
+    add r2 r2 r3
     out
+exit:
+    brc exit
+ 
+var: #1 #2
 
     

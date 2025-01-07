@@ -205,9 +205,19 @@ void parse_branch(char** tokens, uint32_t* instr)
     temp = 0;
     temp |= 3 << SHIFT_OPCODE;
     
-    uint32_t offset = atoi(tokens[1] + 1) & 0x03FFFFFF;
-    temp |= offset;
-    *instr |= temp;
+    if(tokens[1][0] == '#')
+    {
+        uint32_t offset = atoi(tokens[1] + 1) & 0x03FFFFFF;
+        temp |= offset;
+        *instr |= temp;
+    }
+    else
+    {
+        uint32_t offset = ltable[find_label(tokens[1])].addr;
+        temp = (offset - (word_count + 1)) & 0x03FFFFFF;
+        *instr |= temp;
+    }
+    
     return;
 }
 
@@ -266,41 +276,6 @@ void parse_dataproc(char** tokens, uint32_t* instr)
     
 }
 
-void parse_mov(uint32_t* step1, uint32_t* step2, char** tokens)
-{
-    uint32_t src = 0;
-    uint32_t dst = get_regs(tokens[1]);
-    *step1 |= 0 << SHIFT_OPCODE;
-    *step1 |= dst << SHIFT_REGDEST;
-    *step1 |= dst << SHIFT_REGSRC1;
-    *step1 |= dst << SHIFT_REGSRC2;
-    *step1 |= 4 << SHIFT_FUNCODE;
-
-
-    *step2 |= 0 << SHIFT_OPCODE;
-    *step2 |= dst << SHIFT_REGDEST;
-    *step2 |= dst << SHIFT_REGSRC1;
-    *step2 |= 0 << SHIFT_FUNCODE;
-
-    if(strchr(tokens[2], '#') != NULL)
-    {
-        src = get_immd(tokens[2]);
-        *step2 |= 1 << SHIFT_IMMD;
-        *step2 |= src;
-        return;
-    }
-
-    if(strchr(tokens[2], 'r') != NULL)
-    {
-        src = get_regs(tokens[2]);
-        *step2 |= src << SHIFT_REGSRC2;
-        return;
-    }
-
-    fatal_error(tokens[3]);
-    return;
-}
-
 
 void parse_instruction(char* line, FILE* dest_file)
 {
@@ -315,21 +290,8 @@ void parse_instruction(char* line, FILE* dest_file)
         fwrite(&instr, sizeof(instr), 1, dest_file);
         return;
     }
-
     
     parse_flag(tokens, &instr);
-    if(strncmp(tokens[0], "mov", 3) == 0)
-    {
-        uint32_t step1 = 0, step2 = 0;
-        step1 |= instr;
-        step2 |= instr;
-
-        parse_mov(&step1, &step2, tokens);
-
-        fwrite(&step1, sizeof(uint32_t), 1, dest_file);
-        fwrite(&step2, sizeof(uint32_t), 1, dest_file);
-        return;
-    }
 
     if(strncmp(tokens[0], "ldr", 3) == 0)
     {
@@ -348,7 +310,7 @@ void parse_instruction(char* line, FILE* dest_file)
         parse_dataproc(tokens, &instr);
     }
 
-
+    word_count++;
     fwrite(&instr, sizeof(uint32_t), 1, dest_file);
 
     free_tokens(tokens);

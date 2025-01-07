@@ -4,7 +4,6 @@
 
 Label ltable[MAX_LABEL];
 uint32_t lcount = 0;
-uint32_t laddr = 1;
 
 uint32_t find_label(char* name)
 {
@@ -21,28 +20,46 @@ uint32_t find_label(char* name)
 void create_label(char** tokens)
 {
     Label new_label;
-    new_label.addr = laddr;
-    new_label.name = calloc(sizeof(char), strlen(tokens[0]));
-    strncpy(new_label.name, tokens[0], strlen(tokens[0]));
+    new_label.addr = word_count;
+    new_label.name = calloc(strlen(tokens[0] - 1), sizeof(char));
+    strncpy(new_label.name, tokens[0], strlen(tokens[0] - 1));
     ltable[lcount++] = new_label; 
 }
 
-void parse_immd(char* line, FILE* dest_file)
+
+void fill_ltable(char* line)
 {
+    if(strchr(line, ':') == NULL)
+    {  
+        word_count++;
+        return;
+    }  
     char** tokens = split_str(line, " ");
-    uint32_t immd = 0;
+    if(find_label(tokens[0]) == -1)
+    {
+        create_label(tokens);       
+    }
     
-    bool flag = 1;
-    if(find_label(tokens[0]) != -1) check_synerr("overwriting label", &flag);
-    
-    create_label(tokens);
     for(int i = 1; tokens[i] != NULL; i++)
     {
-        immd = atoi(tokens[i] + 1);
-        fwrite(&immd, sizeof(uint32_t), 1, dest_file);
-        laddr++;
+        word_count++;
     }
 
     free_tokens(tokens);
-    return;
+}
+
+
+void parse_label(char* line, FILE* dest_file)
+{
+    char** tokens = split_str(line, " ");
+
+    int immd;
+    for(int i = 1; tokens[i] != NULL; i++)
+    {
+        immd = atoi(tokens[i] + 1);
+        fwrite(&immd, sizeof(int), 1, dest_file);
+        word_count++;
+    }
+
+    free_tokens(tokens);
 }
