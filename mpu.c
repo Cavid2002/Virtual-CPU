@@ -1,5 +1,5 @@
-#include "./include/CPU.h"
 #include <stdio.h>
+#include "./include/CPU.h"
 
 int main(int argc, char** argv)
 {

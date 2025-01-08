@@ -1,7 +1,22 @@
 brc main
 
+var: #100 #200 #300 #400
+len: #4
+
+
 main:
-    add r1 r0 #200
-    add r2 r0 #300
-    add r1 r2 r1
+    add r1 r0 =len
+    ldr r1 r1 #0
+    add r2 r0 =var
+    
+    add r3 r0 #0
+    add r4 r0 #0
+loop:
+    ldr r3 r2 r4
+    add r5 r5 r3
+    add r4 r4 #1
+    subs r10 r4 r1
+    brclt loop
     out
+exit:
+    brc exit
