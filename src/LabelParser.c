@@ -17,13 +17,16 @@ uint32_t find_label(char* name)
     return -1;
 }
 
+
 void create_label(char** tokens)
 {
     Label new_label;
     new_label.addr = word_count;
-    new_label.name = calloc(strlen(tokens[0] - 1), sizeof(char));
-    strncpy(new_label.name, tokens[0], strlen(tokens[0] - 1));
-    ltable[lcount++] = new_label; 
+
+    new_label.name = calloc(strlen(tokens[0]), sizeof(char));
+    memcpy(new_label.name, tokens[0], strlen(tokens[0]) - 1);
+
+    ltable[lcount++] = new_label;
 }
 
 

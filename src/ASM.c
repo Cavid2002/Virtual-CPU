@@ -92,12 +92,14 @@ void generate_binary(FILE* source_file, FILE* dest_file)
         {
             continue;
         }
+        ptr[strlen(ptr) - 1] = '\0';
+        
         fill_ltable(ptr);
     }   
 
     for(int i = 0; i < lcount; i++)
     {
-        printf("%lu === %s\n", ltable[i].addr, ltable[i].name);
+        printf("%s == %lu\n", ltable[i].name, ltable[i].addr);
     }
 
     word_count = 0;
@@ -114,7 +116,10 @@ void generate_binary(FILE* source_file, FILE* dest_file)
             continue;
         }
 
+        ptr[strlen(ptr) - 1] = '\0';
         parse_into_binary(ptr, dest_file);
     }
     
+
+    free(line);
 }

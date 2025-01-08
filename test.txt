@@ -1,13 +1,7 @@
+brc main
 
 main:
-    add r1 r0 =var
-    ldr r2 r1 #0
-    ldr r3 r1 #1
-    add r2 r2 r3
+    add r1 r0 #200
+    add r2 r0 #300
+    add r1 r2 r1
     out
-exit:
-    brc exit
- 
-var: #1 #2
-
-    

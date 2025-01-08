@@ -214,7 +214,7 @@ void parse_branch(char** tokens, uint32_t* instr)
     else
     {
         uint32_t offset = ltable[find_label(tokens[1])].addr;
-        temp = (offset - (word_count + 1)) & 0x03FFFFFF;
+        temp |= (offset - (word_count + 1)) & 0x03FFFFFF;
         *instr |= temp;
     }
     
@@ -288,6 +288,7 @@ void parse_instruction(char* line, FILE* dest_file)
     {
         instr = 0xFFFFFFFF;
         fwrite(&instr, sizeof(instr), 1, dest_file);
+        word_count++;
         return;
     }
     
