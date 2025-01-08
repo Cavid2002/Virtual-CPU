@@ -1,3 +1,6 @@
+#ifndef CPU_H
+#define CPU_H
+
 #include "ALU.h"
 #include "Decoder.h"
 
@@ -27,3 +30,4 @@ void cpu_init();
 void cpu_loop();
 void display_regs();
 
+#endif

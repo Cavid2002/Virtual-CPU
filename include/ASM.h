@@ -1,3 +1,6 @@
+#ifndef ASM_H
+#define ASM_H
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -40,3 +43,5 @@ void generate_binary(FILE* source_file, FILE* dest_file);
 
 uint32_t uncoditional_brch(uint32_t offset);
 uint32_t find_label(char* name);
+
+#endif

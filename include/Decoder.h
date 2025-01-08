@@ -1,3 +1,5 @@
+#ifndef DECODER_H
+#define DECODER_H
 #include <stdint.h>
 
 
@@ -80,3 +82,5 @@ uint8_t always(uint8_t flag);
 
 uint32_t convert_26_to_32(uint32_t instr);
 uint32_t convert_12_to_32(uint32_t instr);
+
+#endif
