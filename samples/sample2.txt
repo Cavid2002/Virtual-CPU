@@ -1,26 +1,22 @@
-.const
-    var #100 #200 #300 #400
-    len #4
-    res #0
-.text
-    xor r1 r1 r1
-    add r1 r1 =var
-    xor r0 r0 r0
-    add r0 r0 =len
-    ldr r0 r0 #0
-    
-    xor r2 r2 r2
-    xor r3 r3 r3
+brc main
 
-    ldr r2 r1 r3
-    add r4 r4 r2
-    add r3 r3 #1
-    subs r10 r3 r0
-    brclt #-5
+var: #100 #200 #300 #400
+len: #4
+
+
+main:
+    add r1 r0 =len
+    ldr r1 r1 #0
+    add r2 r0 =var
     
-    xor r0 r0 r0
-    add r0 r0 =res
-    str r4 r0 #0
-    ldr r10 r0 #0
+    add r3 r0 #0
+    add r4 r0 #0
+loop:
+    ldr r3 r2 r4
+    add r5 r5 r3
+    add r4 r4 #1
+    subs r10 r4 r1
+    brclt loop
     out
-    
+exit:
+    brc exit

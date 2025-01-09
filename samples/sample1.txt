@@ -1,16 +1,40 @@
-.const
-    var #10
-    var2 #32
-.text
-    xor r0 r0 r0
-    xor r1 r1 r1
-    add r0 r0 =var
-    add r1 r1 =var2
+brc _main
 
-    ldr r4 r0 #0
-    str r5 r1 #-4
-    subs r8 r4 r5
-    addlt r10 r10 #252
+stack_mem: #5000
+var1: #200
+var2: #300
+
+
+_add:
+    sub r14 r14 #4
+    str r13 r14 #0
+    add r13 r0 r14
+
+    ldr r1 r13 #8
+    ldr r2 r13 #12
+
+    add r10 r1 r2
+
+    add r14 r0 r13
+    ldr r13 r14 #0
+    add r14 r14 #4 
+    
+
+
+_main:
+    add r14 r0 =stack_mem
+    ldr r14 r14 #0
+    add r13 r0 r14
+    
+    add r1 r1 =var1
+    add r2 r2 =var2
+
+    sub r14 r14 #4
+    str r15 r14 #0
+    brc _add
+    add r14 r14 #4
+
     out
-
+_exit:
+    brc _exit
     

@@ -1,22 +1,49 @@
-brc main
+brc _main
 
-var: #100 #200 #300 #400
-len: #4
+stack_mem: #5000
+var1: #200
+var2: #300
 
 
-main:
-    add r1 r0 =len
-    ldr r1 r1 #0
-    add r2 r0 =var
-    
-    add r3 r0 #0
-    add r4 r0 #0
-loop:
-    ldr r3 r2 r4
-    add r5 r5 r3
-    add r4 r4 #1
-    subs r10 r4 r1
-    brclt loop
+_add:
+    sub r14 r14 #1
+    str r13 r14 #0
+    add r13 r0 r14
+
+    ldr r1 r13 #2
+    ldr r2 r13 #3
+   
+    add r10 r1 r2
     out
-exit:
-    brc exit
+    add r14 r0 r13
+    ldr r13 r14 #0
+    add r14 r14 #1
+    ldr r15 r14 #0
+     
+        
+
+_main:
+    add r14 r0 =stack_mem
+    ldr r14 r14 #0
+    add r13 r14 #0
+    
+    add r1 r0 =var1
+    ldr r1 r1 #0
+    add r2 r0 =var2
+    ldr r2 r2 #0
+
+    sub r14 r14 #1
+    str r1 r14 #0
+    
+    sub r14 r14 #1
+    str r2 r14 #0
+    
+    sub r14 r14 #1
+    add r12 r15 #2
+    str r12 r14 #0
+    brc _add 
+    add r14 r14 #3
+
+_exit:
+    brc _exit
+    
